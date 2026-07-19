@@ -172,7 +172,7 @@ body { background: var(--bg); color: var(--text); font-family: -apple-system, Bl
 .card-body { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 0; }
 .card-body.flip-out { animation: flipOut 0.18s ease both; }
 .card-body.flip-in  { animation: flipIn  0.18s ease both; }
-.card-top { position: absolute; top: 12px; left: 0; right: 0; display: flex; justify-content: space-between; padding: 0 14px; }
+.card-top { position: absolute; top: 14px; left: 0; right: 64px; display: flex; justify-content: flex-start; gap: 10px; padding: 0 16px; }
 .card-counter { font-size: 11px; color: var(--text3); }
 .card-set-badge { font-size: 11px; color: var(--text3); }
 
@@ -226,19 +226,23 @@ rt { font-size: 0.5em; color: var(--text2); font-weight: 400; }
 .action-row.visible { opacity: 1; pointer-events: all; animation: revealIn 0.16s ease both; }
 .action-row input {
   flex: 1; background: var(--bg2); border: 0.5px solid var(--border2);
-  border-radius: 8px; padding: 0.55rem 0.75rem;
-  color: var(--text); font-size: 15px; outline: none;
+  border-radius: 10px; padding: 0.7rem 0.85rem; min-height: 50px;
+  color: var(--text); font-size: 16px; outline: none;
 }
 .action-row input:focus { border-color: var(--accent); }
 
 /* ── BUTTONS ── */
 .btn {
-  flex: 1; padding: 0.55rem 0.75rem;
-  border: 0.5px solid var(--border2); border-radius: 8px;
+  flex: 1; padding: 0.7rem 0.75rem; min-height: 50px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 0.5px solid var(--border2); border-radius: 10px;
   background: transparent; color: var(--text2);
-  font-size: 14px; cursor: pointer; transition: all 0.15s;
+  font-size: 16px; cursor: pointer; transition: all 0.15s;
+  touch-action: manipulation; -webkit-tap-highlight-color: rgba(0,0,0,0);
+  user-select: none; -webkit-user-select: none;
 }
 .btn:hover { background: var(--bg3); color: var(--text); }
+.btn:active { transform: scale(0.97); }
 .btn.danger  { border-color: rgba(226,75,74,0.4);  color: var(--red-text); }
 .btn.success { border-color: rgba(29,158,117,0.4); color: var(--green-text); }
 .btn-check { flex: 0 0 auto; width: 76px; }
@@ -271,11 +275,14 @@ rt { font-size: 0.5em; color: var(--text2); font-weight: 400; }
 .panel-label { font-size: 11px; color: var(--text3); letter-spacing: 0.08em; text-transform: uppercase; }
 .panel-chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .panel-chip {
-  font-size: 13px; padding: 5px 12px;
-  border: 0.5px solid var(--border2); border-radius: 20px;
+  font-size: 14px; padding: 9px 15px; min-height: 44px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 0.5px solid var(--border2); border-radius: 22px;
   background: transparent; color: var(--text2);
-  cursor: pointer; transition: all 0.15s; user-select: none;
+  cursor: pointer; transition: all 0.15s; user-select: none; -webkit-user-select: none;
+  touch-action: manipulation; -webkit-tap-highlight-color: rgba(0,0,0,0);
 }
+.panel-chip:active { transform: scale(0.96); }
 .panel-chip:hover { background: var(--bg3); color: var(--text); }
 .panel-chip.active { background: var(--accent-bg); border-color: var(--accent-border); color: var(--accent); font-weight: 500; }
 @keyframes chipShake {
@@ -291,10 +298,13 @@ rt { font-size: 0.5em; color: var(--text2); font-weight: 400; }
 
 .panel-row { display: flex; gap: 8px; }
 .panel-btn {
-  flex: 1; padding: 0.5rem 0.75rem;
+  flex: 1; padding: 0.6rem 0.75rem; min-height: 44px;
+  display: inline-flex; align-items: center; justify-content: center;
   border: 0.5px solid var(--border2); border-radius: 8px;
   background: transparent; color: var(--text2);
-  font-size: 13px; cursor: pointer; transition: all 0.15s; text-align: center;
+  font-size: 14px; cursor: pointer; transition: all 0.15s; text-align: center;
+  touch-action: manipulation; -webkit-tap-highlight-color: rgba(0,0,0,0);
+  user-select: none; -webkit-user-select: none;
 }
 .panel-btn:hover { background: var(--bg3); color: var(--text); }
 .panel-btn.active { background: var(--bg3); border-color: var(--border2); color: var(--text); font-weight: 500; }
@@ -380,13 +390,26 @@ rt { font-size: 0.5em; color: var(--text2); font-weight: 400; }
 /* ── QA INLINE AUDIO ── */
 .qa-audio-btn {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 19px; height: 19px; margin: 0 8px 0 2px; flex: 0 0 auto;
+  width: 36px; height: 36px; margin: 0 8px 0 2px; flex: 0 0 auto;
   background: var(--bg3); border: 0.5px solid var(--border2); color: var(--text2);
-  border-radius: 50%; cursor: pointer; font-size: 10px; line-height: 1;
-  transition: all 0.15s; vertical-align: -3px;
+  border-radius: 50%; cursor: pointer; font-size: 16px; line-height: 1;
+  transition: all 0.15s; vertical-align: middle;
+  touch-action: manipulation; -webkit-tap-highlight-color: rgba(0,0,0,0);
+  user-select: none; -webkit-user-select: none;
 }
 .qa-audio-btn:hover { background: var(--bg4); color: var(--text); }
-.qa-audio-btn.playing { color: var(--accent); border-color: var(--accent-border); }
+.qa-audio-btn:active { transform: scale(0.9); }
+.qa-audio-btn.playing { color: var(--accent); border-color: var(--accent-border); background: var(--accent-bg); }
+
+/* primary speaker button on the card — large, obvious tap target */
+#card-audio {
+  position: absolute; top: 10px; right: 10px; z-index: 3;
+  width: 44px; height: 44px; font-size: 20px; margin: 0;
+  background: var(--accent-bg); border: 1px solid var(--accent-border); color: var(--accent);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+}
+#card-audio:active { transform: scale(0.92); }
+#card-audio.playing { background: var(--accent); color: #fff; border-color: var(--accent); }
 
 /* ── ALIGNER ── */
 
@@ -474,7 +497,7 @@ rt { font-size: 0.5em; color: var(--text2); font-weight: 400; }
     <div class="card-body" id="card-body">
       <div class="prompt-lang-row">
         <span class="prompt-lang" id="plang"></span>
-        <button class="qa-audio-btn" id="card-audio" style="display:none" title="Play audio (P)"
+        <button class="qa-audio-btn" id="card-audio" style="display:none" aria-label="Play audio" title="Play audio (P)"
                 onclick="event.stopPropagation(); playCurrentAudio()">🔊</button>
       </div>
       <div class="prompt-text" id="ptext">Select sets in Config to start.</div>
@@ -646,7 +669,7 @@ rt { font-size: 0.5em; color: var(--text2); font-weight: 400; }
 <audio id="audio-player" preload="auto"></audio>
 <script>
 window.QUIZ_AUDIO = { clips: {"7:0": ["Vol3_Vocab_N5.mp3", 16.44, 18.91], "8:0": ["Vol3_Vocab_N5.mp3", 20.88, 24.83], "8:1": ["Vol3_Vocab_N5.mp3", 28.47, 33.43], "7:1": ["Vol3_Vocab_N5.mp3", 37.0, 39.51], "8:2": ["Vol3_Vocab_N5.mp3", 41.78, 46.45], "8:3": ["Vol3_Vocab_N5.mp3", 50.86, 54.57], "7:2": ["Vol3_Vocab_N5.mp3", 58.78, 62.25], "8:4": ["Vol3_Vocab_N5.mp3", 64.76, 70.72], "8:5": ["Vol3_Vocab_N5.mp3", 75.42, 80.98], "7:3": ["Vol3_Vocab_N5.mp3", 84.84, 87.59], "8:6": ["Vol3_Vocab_N5.mp3", 90.04, 94.57], "8:7": ["Vol3_Vocab_N5.mp3", 98.16, 103.54], "7:4": ["Vol3_Vocab_N5.mp3", 107.35, 110.13], "8:8": ["Vol3_Vocab_N5.mp3", 112.67, 117.9], "8:9": ["Vol3_Vocab_N5.mp3", 121.44, 127.04], "7:5": ["Vol3_Vocab_N5.mp3", 130.58, 133.03], "8:10": ["Vol3_Vocab_N5.mp3", 135.45, 140.42], "8:11": ["Vol3_Vocab_N5.mp3", 144.88, 151.63], "7:6": ["Vol3_Vocab_N5.mp3", 154.96, 157.65], "8:12": ["Vol3_Vocab_N5.mp3", 159.99, 163.44], "8:13": ["Vol3_Vocab_N5.mp3", 167.56, 172.12], "7:7": ["Vol3_Vocab_N5.mp3", 176.54, 178.95], "8:14": ["Vol3_Vocab_N5.mp3", 182.18, 186.33], "8:15": ["Vol3_Vocab_N5.mp3", 190.79, 198.7], "7:8": ["Vol3_Vocab_N5.mp3", 203.07, 206.66], "8:16": ["Vol3_Vocab_N5.mp3", 210.02, 214.61], "8:17": ["Vol3_Vocab_N5.mp3", 218.66, 224.27], "7:9": ["Vol3_Vocab_N5.mp3", 228.57, 232.19], "8:18": ["Vol3_Vocab_N5.mp3", 235.21, 241.22], "8:19": ["Vol3_Vocab_N5.mp3", 245.37, 251.93], "7:10": ["Vol3_Vocab_N5.mp3", 255.87, 258.41], "8:20": ["Vol3_Vocab_N5.mp3", 260.99, 265.71], "8:21": ["Vol3_Vocab_N5.mp3", 270.01, 273.82], "7:11": ["Vol3_Vocab_N5.mp3", 277.54, 280.41], "8:22": ["Vol3_Vocab_N5.mp3", 282.87, 288.13], "8:23": ["Vol3_Vocab_N5.mp3", 291.76, 296.85], "7:12": ["Vol3_Vocab_N5.mp3", 300.05, 302.34], "8:24": ["Vol3_Vocab_N5.mp3", 304.69, 308.29], "8:25": ["Vol3_Vocab_N5.mp3", 312.03, 316.86], "7:13": ["Vol3_Vocab_N5.mp3", 320.46, 327.45], "8:26": ["Vol3_Vocab_N5.mp3", 331.26, 336.85], "8:27": ["Vol3_Vocab_N5.mp3", 342.11, 348.31], "10:23": ["Vol4_Vocab.mp3", 18.22, 21.96], "11:0": ["Vol4_Vocab.mp3", 24.15, 28.81], "11:1": ["Vol4_Vocab.mp3", 32.31, 36.0], "10:4": ["Vol4_Vocab.mp3", 39.81, 42.34], "11:2": ["Vol4_Vocab.mp3", 44.51, 48.25], "11:3": ["Vol4_Vocab.mp3", 52.35, 56.47], "10:2": ["Vol4_Vocab.mp3", 59.75, 62.54], "11:4": ["Vol4_Vocab.mp3", 65.12, 69.4], "11:5": ["Vol4_Vocab.mp3", 73.58, 76.49], "10:15": ["Vol4_Vocab.mp3", 80.15, 82.62], "11:6": ["Vol4_Vocab.mp3", 85.12, 90.44], "11:7": ["Vol4_Vocab.mp3", 94.59, 98.94], "10:17": ["Vol4_Vocab.mp3", 102.73, 108.99], "11:8": ["Vol4_Vocab.mp3", 112.29, 116.09], "11:9": ["Vol4_Vocab.mp3", 120.96, 127.79], "10:19": ["Vol4_Vocab.mp3", 131.33, 134.26], "11:10": ["Vol4_Vocab.mp3", 137.17, 141.49], "11:11": ["Vol4_Vocab.mp3", 145.3, 150.47], "10:13": ["Vol4_Vocab.mp3", 154.27, 157.95], "11:12": ["Vol4_Vocab.mp3", 160.84, 166.52], "11:13": ["Vol4_Vocab.mp3", 170.69, 177.69], "10:12": ["Vol4_Vocab.mp3", 181.35, 184.23], "11:14": ["Vol4_Vocab.mp3", 186.59, 191.85], "11:15": ["Vol4_Vocab.mp3", 195.89, 201.83], "10:11": ["Vol4_Vocab.mp3", 205.46, 208.1], "11:16": ["Vol4_Vocab.mp3", 210.83, 215.45], "11:17": ["Vol4_Vocab.mp3", 219.79, 223.81], "10:0": ["Vol4_Vocab.mp3", 227.7, 230.0], "11:18": ["Vol4_Vocab.mp3", 232.54, 237.7], "11:19": ["Vol4_Vocab.mp3", 242.14, 248.88], "10:21": ["Vol4_Vocab.mp3", 252.59, 260.15], "11:20": ["Vol4_Vocab.mp3", 263.92, 267.92], "11:21": ["Vol4_Vocab.mp3", 272.24, 277.96], "11:22": ["Vol4_Vocab.mp3", 281.55, 284.76], "10:8": ["Vol4_Vocab.mp3", 288.14, 291.07], "11:23": ["Vol4_Vocab.mp3", 293.49, 299.42], "11:24": ["Vol4_Vocab.mp3", 303.55, 309.27], "10:9": ["Vol4_Vocab.mp3", 312.67, 315.64], "11:25": ["Vol4_Vocab.mp3", 318.03, 323.07], "11:26": ["Vol4_Vocab.mp3", 328.07, 335.42], "10:25": ["Vol4_Vocab.mp3", 339.37, 343.92], "11:27": ["Vol4_Vocab.mp3", 346.53, 351.92], "11:28": ["Vol4_Vocab.mp3", 357.25, 362.79], "10:3": ["Vol4_Vocab.mp3", 366.42, 369.44], "11:29": ["Vol4_Vocab.mp3", 372.34, 377.39], "11:30": ["Vol4_Vocab.mp3", 382.26, 389.05], "10:10": ["Vol4_Vocab.mp3", 392.61, 395.42], "11:31": ["Vol4_Vocab.mp3", 398.27, 405.02], "11:32": ["Vol4_Vocab.mp3", 409.93, 413.76], "11:33": ["Vol4_Vocab.mp3", 425.31, 429.73], "11:34": ["Vol4_Vocab.mp3", 434.22, 438.23], "10:5": ["Vol4_Vocab.mp3", 441.76, 444.58], "11:35": ["Vol4_Vocab.mp3", 447.19, 452.04], "11:36": ["Vol4_Vocab.mp3", 454.45, 459.48], "10:6": ["Vol4_Vocab.mp3", 462.75, 465.03], "11:37": ["Vol4_Vocab.mp3", 467.21, 471.06], "11:38": ["Vol4_Vocab.mp3", 474.44, 478.84], "10:1": ["Vol4_Vocab.mp3", 482.57, 486.45], "11:39": ["Vol4_Vocab.mp3", 489.18, 494.32], "11:40": ["Vol4_Vocab.mp3", 499.38, 505.5], "10:14": ["Vol4_Vocab.mp3", 508.8, 513.71], "11:41": ["Vol4_Vocab.mp3", 516.41, 520.26], "11:42": ["Vol4_Vocab.mp3", 524.17, 528.05], "10:22": ["Vol4_Vocab.mp3", 531.73, 536.08], "11:43": ["Vol4_Vocab.mp3", 538.78, 544.52], "11:44": ["Vol4_Vocab.mp3", 548.63, 555.06], "10:26": ["Vol4_Vocab.mp3", 558.97, 563.43], "11:45": ["Vol4_Vocab.mp3", 566.1, 569.21], "11:46": ["Vol4_Vocab.mp3", 573.53, 583.27], "10:7": ["Vol4_Vocab.mp3", 586.38, 588.86], "11:47": ["Vol4_Vocab.mp3", 590.9, 595.54], "11:48": ["Vol4_Vocab.mp3", 599.3, 604.48], "10:24": ["Vol4_Vocab.mp3", 607.78, 610.95], "11:49": ["Vol4_Vocab.mp3", 613.4, 617.18], "11:50": ["Vol4_Vocab.mp3", 620.48, 625.64], "10:20": ["Vol4_Vocab.mp3", 629.15, 631.65], "11:51": ["Vol4_Vocab.mp3", 633.91, 638.54], "11:52": ["Vol4_Vocab.mp3", 642.65, 648.65], "10:18": ["Vol4_Vocab.mp3", 652.51, 655.57], "11:53": ["Vol4_Vocab.mp3", 657.9, 661.14], "11:54": ["Vol4_Vocab.mp3", 664.79, 670.91], "12:0": ["Vol4_QA.mp3", 23.31, 33.58], "12:1": ["Vol4_QA.mp3", 33.58, 50.69], "12:2": ["Vol4_QA.mp3", 50.69, 63.27], "12:3": ["Vol4_QA.mp3", 63.27, 76.45], "12:4": ["Vol4_QA.mp3", 76.45, 92.94], "12:5": ["Vol4_QA.mp3", 92.94, 106.72], "12:6": ["Vol4_QA.mp3", 106.72, 122.65], "12:7": ["Vol4_QA.mp3", 122.65, 137.72], "12:8": ["Vol4_QA.mp3", 137.72, 149.03], "12:9": ["Vol4_QA.mp3", 149.03, 169.56], "12:0:q": ["Vol4_QA.mp3", 8.12, 11.07], "12:0:a": ["Vol4_QA.mp3", 11.67, 18.42], "12:1:q": ["Vol4_QA.mp3", 18.83, 22.4], "12:1:a": ["Vol4_QA.mp3", 23.31, 33.34], "12:2:q": ["Vol4_QA.mp3", 33.92, 37.94], "12:2:a": ["Vol4_QA.mp3", 38.34, 45.59], "12:3:q": ["Vol4_QA.mp3", 46.17, 50.03], "12:3:a": ["Vol4_QA.mp3", 51.45, 63.07], "12:4:q": ["Vol4_QA.mp3", 63.56, 68.44], "12:4:a": ["Vol4_QA.mp3", 70.23, 79.68], "12:5:q": ["Vol4_QA.mp3", 80.19, 83.88], "12:5:a": ["Vol4_QA.mp3", 86.35, 98.68], "12:6:q": ["Vol4_QA.mp3", 99.95, 105.81], "12:6:a": ["Vol4_QA.mp3", 107.73, 116.43], "12:7:q": ["Vol4_QA.mp3", 117.03, 122.26], "12:7:a": ["Vol4_QA.mp3", 123.13, 132.39], "12:8:q": ["Vol4_QA.mp3", 133.45, 137.21], "12:8:a": ["Vol4_QA.mp3", 138.32, 148.64], "12:9:q": ["Vol4_QA.mp3", 149.53, 154.6], "12:9:a": ["Vol4_QA.mp3", 155.74, 167.36]} };
-Object.assign(window.QUIZ_AUDIO.clips, {"13:0": ["Vol5_Vocab.mp3", 18.26, 20.56], "14:0": ["Vol5_Vocab.mp3", 23.09, 26.17], "14:1": ["Vol5_Vocab.mp3", 29.82, 32.28], "13:1": ["Vol5_Vocab.mp3", 35.46, 37.46], "14:2": ["Vol5_Vocab.mp3", 39.74, 42.85], "14:3": ["Vol5_Vocab.mp3", 47.05, 50.86], "13:2": ["Vol5_Vocab.mp3", 54.49, 58.63], "14:4": ["Vol5_Vocab.mp3", 61.77, 65.08], "14:5": ["Vol5_Vocab.mp3", 69.13, 71.54], "13:3": ["Vol5_Vocab.mp3", 75.33, 79.38], "14:6": ["Vol5_Vocab.mp3", 82.97, 87.1], "14:7": ["Vol5_Vocab.mp3", 91.96, 96.71], "13:4": ["Vol5_Vocab.mp3", 101.2, 104.68], "14:8": ["Vol5_Vocab.mp3", 107.53, 110.46], "14:9": ["Vol5_Vocab.mp3", 114.45, 119.14], "13:5": ["Vol5_Vocab.mp3", 122.73, 126.56], "14:10": ["Vol5_Vocab.mp3", 129.46, 134.15], "14:11": ["Vol5_Vocab.mp3", 137.84, 142.47], "13:6": ["Vol5_Vocab.mp3", 145.89, 149.6], "14:12": ["Vol5_Vocab.mp3", 152.65, 155.17], "14:13": ["Vol5_Vocab.mp3", 159.4, 163.55], "13:7": ["Vol5_Vocab.mp3", 167.08, 169.46], "14:14": ["Vol5_Vocab.mp3", 171.81, 175.84], "14:15": ["Vol5_Vocab.mp3", 179.25, 183.4], "13:8": ["Vol5_Vocab.mp3", 187.84, 190.03], "14:16": ["Vol5_Vocab.mp3", 193.1, 197.31], "14:17": ["Vol5_Vocab.mp3", 202.54, 206.08], "13:9": ["Vol5_Vocab.mp3", 210.36, 214.41], "14:18": ["Vol5_Vocab.mp3", 217.98, 222.76], "14:19": ["Vol5_Vocab.mp3", 227.37, 232.3], "13:10": ["Vol5_Vocab.mp3", 236.22, 238.76], "14:20": ["Vol5_Vocab.mp3", 241.83, 246.26], "14:21": ["Vol5_Vocab.mp3", 251.43, 255.29], "13:11": ["Vol5_Vocab.mp3", 259.36, 261.55], "14:22": ["Vol5_Vocab.mp3", 264.44, 270.48], "14:23": ["Vol5_Vocab.mp3", 275.5, 279.06], "13:12": ["Vol5_Vocab.mp3", 282.71, 284.62], "14:24": ["Vol5_Vocab.mp3", 287.31, 292.42], "14:25": ["Vol5_Vocab.mp3", 296.97, 303.75], "13:13": ["Vol5_Vocab.mp3", 307.54, 309.72], "14:26": ["Vol5_Vocab.mp3", 312.67, 318.44], "14:27": ["Vol5_Vocab.mp3", 323.71, 329.96], "13:14": ["Vol5_Vocab.mp3", 335.46, 338.41], "14:28": ["Vol5_Vocab.mp3", 341.78, 346.16], "14:29": ["Vol5_Vocab.mp3", 352.15, 358.02], "13:15": ["Vol5_Vocab.mp3", 362.79, 366.87], "14:30": ["Vol5_Vocab.mp3", 371.07, 376.57], "14:31": ["Vol5_Vocab.mp3", 381.51, 385.27], "13:16": ["Vol5_Vocab.mp3", 390.25, 392.71], "14:32": ["Vol5_Vocab.mp3", 395.33, 401.79], "14:33": ["Vol5_Vocab.mp3", 406.79, 412.75], "13:17": ["Vol5_Vocab.mp3", 416.57, 418.61], "14:34": ["Vol5_Vocab.mp3", 421.62, 424.93], "14:35": ["Vol5_Vocab.mp3", 429.12, 436.55], "13:18": ["Vol5_Vocab.mp3", 440.41, 442.58], "14:36": ["Vol5_Vocab.mp3", 445.57, 450.6], "14:37": ["Vol5_Vocab.mp3", 454.67, 460.68], "13:19": ["Vol5_Vocab.mp3", 464.5, 466.88], "14:38": ["Vol5_Vocab.mp3", 469.99, 474.37], "14:39": ["Vol5_Vocab.mp3", 478.39, 482.09], "13:20": ["Vol5_Vocab.mp3", 486.17, 489.05], "14:40": ["Vol5_Vocab.mp3", 491.93, 496.27], "14:41": ["Vol5_Vocab.mp3", 500.19, 504.94], "13:21": ["Vol5_Vocab.mp3", 508.65, 511.08], "14:42": ["Vol5_Vocab.mp3", 513.74, 517.04], "14:43": ["Vol5_Vocab.mp3", 521.18, 526.42], "13:22": ["Vol5_Vocab.mp3", 531.27, 535.13], "14:44": ["Vol5_Vocab.mp3", 538.47, 542.25], "14:45": ["Vol5_Vocab.mp3", 546.86, 551.43], "13:23": ["Vol5_Vocab.mp3", 556.05, 558.24], "14:46": ["Vol5_Vocab.mp3", 561.18, 565.77], "14:47": ["Vol5_Vocab.mp3", 570.56, 575.48], "13:24": ["Vol5_Vocab.mp3", 580.36, 583.72], "14:48": ["Vol5_Vocab.mp3", 586.86, 591.88], "14:49": ["Vol5_Vocab.mp3", 597.09, 601.27], "13:25": ["Vol5_Vocab.mp3", 605.51, 608.16], "14:50": ["Vol5_Vocab.mp3", 611.41, 616.2], "14:51": ["Vol5_Vocab.mp3", 621.35, 626.26], "13:26": ["Vol5_Vocab.mp3", 631.1, 632.83], "14:52": ["Vol5_Vocab.mp3", 634.89, 639.05], "14:53": ["Vol5_Vocab.mp3", 643.59, 647.64], "13:27": ["Vol5_Vocab.mp3", 651.88, 654.56], "14:54": ["Vol5_Vocab.mp3", 657.77, 661.12], "14:55": ["Vol5_Vocab.mp3", 665.85, 670.51], "13:28": ["Vol5_Vocab.mp3", 674.92, 677.75], "14:56": ["Vol5_Vocab.mp3", 681.19, 683.9], "14:57": ["Vol5_Vocab.mp3", 689.02, 694.17], "13:29": ["Vol5_Vocab.mp3", 697.64, 700.52], "14:58": ["Vol5_Vocab.mp3", 703.6, 708.38], "14:59": ["Vol5_Vocab.mp3", 712.79, 717.73], "13:30": ["Vol5_Vocab.mp3", 722.31, 724.62], "14:60": ["Vol5_Vocab.mp3", 727.55, 734.18], "14:61": ["Vol5_Vocab.mp3", 739.66, 743.57], "13:31": ["Vol5_Vocab.mp3", 747.79, 749.9], "14:62": ["Vol5_Vocab.mp3", 752.96, 756.83], "14:63": ["Vol5_Vocab.mp3", 762.34, 770.72], "13:32": ["Vol5_Vocab.mp3", 775.23, 777.43], "14:64": ["Vol5_Vocab.mp3", 780.44, 785.58], "14:65": ["Vol5_Vocab.mp3", 791.1, 797.48], "13:33": ["Vol5_Vocab.mp3", 801.71, 803.75], "14:66": ["Vol5_Vocab.mp3", 806.53, 810.42], "14:67": ["Vol5_Vocab.mp3", 815.17, 818.56], "13:34": ["Vol5_Vocab.mp3", 822.37, 824.6], "14:68": ["Vol5_Vocab.mp3", 827.55, 833.79], "14:69": ["Vol5_Vocab.mp3", 839.51, 845.0], "13:35": ["Vol5_Vocab.mp3", 848.8, 851.16], "14:70": ["Vol5_Vocab.mp3", 853.49, 856.65], "14:71": ["Vol5_Vocab.mp3", 860.91, 866.13], "13:36": ["Vol5_Vocab.mp3", 869.04, 871.4], "14:72": ["Vol5_Vocab.mp3", 873.94, 878.12], "14:73": ["Vol5_Vocab.mp3", 883.12, 889.75], "13:37": ["Vol5_Vocab.mp3", 893.75, 896.51], "14:74": ["Vol5_Vocab.mp3", 899.29, 905.44], "14:75": ["Vol5_Vocab.mp3", 910.44, 915.32]});
+Object.assign(window.QUIZ_AUDIO.clips, {"13:0": ["Vol5_Vocab.mp3", 17.96, 20.66], "14:0": ["Vol5_Vocab.mp3", 22.79, 26.27], "14:1": ["Vol5_Vocab.mp3", 29.52, 32.38], "13:1": ["Vol5_Vocab.mp3", 35.16, 37.56], "14:2": ["Vol5_Vocab.mp3", 39.44, 42.95], "14:3": ["Vol5_Vocab.mp3", 46.75, 50.96], "13:2": ["Vol5_Vocab.mp3", 54.19, 58.73], "14:4": ["Vol5_Vocab.mp3", 61.47, 65.18], "14:5": ["Vol5_Vocab.mp3", 68.83, 71.64], "13:3": ["Vol5_Vocab.mp3", 75.03, 79.48], "14:6": ["Vol5_Vocab.mp3", 82.67, 87.2], "14:7": ["Vol5_Vocab.mp3", 91.66, 96.81], "13:4": ["Vol5_Vocab.mp3", 100.9, 104.78], "14:8": ["Vol5_Vocab.mp3", 107.22, 110.56], "14:9": ["Vol5_Vocab.mp3", 114.15, 119.24], "13:5": ["Vol5_Vocab.mp3", 122.43, 126.66], "14:10": ["Vol5_Vocab.mp3", 129.16, 134.25], "14:11": ["Vol5_Vocab.mp3", 137.54, 142.57], "13:6": ["Vol5_Vocab.mp3", 145.59, 149.7], "14:12": ["Vol5_Vocab.mp3", 152.35, 155.27], "14:13": ["Vol5_Vocab.mp3", 159.1, 163.65], "13:7": ["Vol5_Vocab.mp3", 166.78, 169.56], "14:14": ["Vol5_Vocab.mp3", 171.51, 175.94], "14:15": ["Vol5_Vocab.mp3", 178.95, 183.5], "13:8": ["Vol5_Vocab.mp3", 187.54, 190.12], "14:16": ["Vol5_Vocab.mp3", 192.8, 197.41], "14:17": ["Vol5_Vocab.mp3", 202.24, 206.18], "13:9": ["Vol5_Vocab.mp3", 210.06, 214.5], "14:18": ["Vol5_Vocab.mp3", 217.68, 222.86], "14:19": ["Vol5_Vocab.mp3", 227.07, 232.4], "13:10": ["Vol5_Vocab.mp3", 235.92, 238.86], "14:20": ["Vol5_Vocab.mp3", 241.53, 246.36], "14:21": ["Vol5_Vocab.mp3", 251.13, 255.39], "13:11": ["Vol5_Vocab.mp3", 259.06, 261.65], "14:22": ["Vol5_Vocab.mp3", 264.14, 270.58], "14:23": ["Vol5_Vocab.mp3", 275.2, 279.16], "13:12": ["Vol5_Vocab.mp3", 282.41, 284.72], "14:24": ["Vol5_Vocab.mp3", 287.01, 292.52], "14:25": ["Vol5_Vocab.mp3", 296.67, 303.85], "13:13": ["Vol5_Vocab.mp3", 307.24, 309.82], "14:26": ["Vol5_Vocab.mp3", 312.37, 318.54], "14:27": ["Vol5_Vocab.mp3", 323.41, 330.06], "13:14": ["Vol5_Vocab.mp3", 335.16, 338.51], "14:28": ["Vol5_Vocab.mp3", 341.48, 346.26], "14:29": ["Vol5_Vocab.mp3", 351.85, 358.12], "13:15": ["Vol5_Vocab.mp3", 362.49, 366.97], "14:30": ["Vol5_Vocab.mp3", 370.77, 376.67], "14:31": ["Vol5_Vocab.mp3", 381.21, 385.37], "13:16": ["Vol5_Vocab.mp3", 389.95, 392.81], "14:32": ["Vol5_Vocab.mp3", 395.04, 401.89], "14:33": ["Vol5_Vocab.mp3", 406.49, 412.85], "13:17": ["Vol5_Vocab.mp3", 416.27, 418.71], "14:34": ["Vol5_Vocab.mp3", 421.32, 425.03], "14:35": ["Vol5_Vocab.mp3", 428.82, 436.65], "13:18": ["Vol5_Vocab.mp3", 440.11, 442.68], "14:36": ["Vol5_Vocab.mp3", 445.28, 450.7], "14:37": ["Vol5_Vocab.mp3", 454.37, 460.78], "13:19": ["Vol5_Vocab.mp3", 464.2, 466.98], "14:38": ["Vol5_Vocab.mp3", 469.69, 474.47], "14:39": ["Vol5_Vocab.mp3", 478.1, 482.19], "13:20": ["Vol5_Vocab.mp3", 485.87, 489.15], "14:40": ["Vol5_Vocab.mp3", 491.63, 496.37], "14:41": ["Vol5_Vocab.mp3", 499.89, 505.04], "13:21": ["Vol5_Vocab.mp3", 508.35, 511.18], "14:42": ["Vol5_Vocab.mp3", 513.44, 517.14], "14:43": ["Vol5_Vocab.mp3", 520.88, 526.52], "13:22": ["Vol5_Vocab.mp3", 530.97, 535.23], "14:44": ["Vol5_Vocab.mp3", 538.17, 542.36], "14:45": ["Vol5_Vocab.mp3", 546.56, 551.53], "13:23": ["Vol5_Vocab.mp3", 555.75, 558.34], "14:46": ["Vol5_Vocab.mp3", 560.88, 565.87], "14:47": ["Vol5_Vocab.mp3", 570.26, 575.58], "13:24": ["Vol5_Vocab.mp3", 580.06, 583.82], "14:48": ["Vol5_Vocab.mp3", 586.56, 591.99], "14:49": ["Vol5_Vocab.mp3", 596.79, 601.37], "13:25": ["Vol5_Vocab.mp3", 605.21, 608.26], "14:50": ["Vol5_Vocab.mp3", 611.11, 616.3], "14:51": ["Vol5_Vocab.mp3", 621.05, 626.36], "13:26": ["Vol5_Vocab.mp3", 630.8, 632.93], "14:52": ["Vol5_Vocab.mp3", 634.59, 639.15], "14:53": ["Vol5_Vocab.mp3", 643.29, 647.74], "13:27": ["Vol5_Vocab.mp3", 651.58, 654.66], "14:54": ["Vol5_Vocab.mp3", 657.47, 661.22], "14:55": ["Vol5_Vocab.mp3", 665.55, 670.61], "13:28": ["Vol5_Vocab.mp3", 674.62, 677.85], "14:56": ["Vol5_Vocab.mp3", 680.89, 684.0], "14:57": ["Vol5_Vocab.mp3", 688.72, 694.27], "13:29": ["Vol5_Vocab.mp3", 697.34, 700.62], "14:58": ["Vol5_Vocab.mp3", 703.3, 708.48], "14:59": ["Vol5_Vocab.mp3", 712.49, 717.83], "13:30": ["Vol5_Vocab.mp3", 722.01, 724.72], "14:60": ["Vol5_Vocab.mp3", 727.25, 734.28], "14:61": ["Vol5_Vocab.mp3", 739.36, 743.67], "13:31": ["Vol5_Vocab.mp3", 747.49, 750.0], "14:62": ["Vol5_Vocab.mp3", 752.66, 756.93], "14:63": ["Vol5_Vocab.mp3", 762.04, 770.82], "13:32": ["Vol5_Vocab.mp3", 774.93, 777.53], "14:64": ["Vol5_Vocab.mp3", 780.14, 785.68], "14:65": ["Vol5_Vocab.mp3", 790.8, 797.58], "13:33": ["Vol5_Vocab.mp3", 801.41, 803.86], "14:66": ["Vol5_Vocab.mp3", 806.23, 810.52], "14:67": ["Vol5_Vocab.mp3", 814.87, 818.66], "13:34": ["Vol5_Vocab.mp3", 822.07, 824.7], "14:68": ["Vol5_Vocab.mp3", 827.25, 833.89], "14:69": ["Vol5_Vocab.mp3", 839.21, 845.1], "13:35": ["Vol5_Vocab.mp3", 848.5, 851.26], "14:70": ["Vol5_Vocab.mp3", 853.19, 856.75], "14:71": ["Vol5_Vocab.mp3", 860.61, 866.23], "13:36": ["Vol5_Vocab.mp3", 868.74, 871.5], "14:72": ["Vol5_Vocab.mp3", 873.64, 878.22], "14:73": ["Vol5_Vocab.mp3", 882.82, 889.85], "13:37": ["Vol5_Vocab.mp3", 893.45, 896.61], "14:74": ["Vol5_Vocab.mp3", 898.99, 905.54], "14:75": ["Vol5_Vocab.mp3", 910.14, 915.42]});
 window.QUIZ_AUDIO_B64 = {}; // audio removed to keep file small enough for GitHub Pages / mobile upload
 </script>
 
@@ -1703,7 +1726,7 @@ function dir() {
 // until the card is flipped.
 function qaAudioBtn(key, part) {
   if (!keyOffset[key + ':' + part]) return '';
-  return '<button class="qa-audio-btn" data-qa="' + key + ':' + part + '" title="Play ' + part.toUpperCase() + ' (' + (part === 'q' ? 'Q' : 'A') + ' key)"' +
+  return '<button class="qa-audio-btn" data-qa="' + key + ':' + part + '" aria-label="Play ' + part.toUpperCase() + '" title="Play ' + part.toUpperCase() + ' (' + (part === 'q' ? 'Q' : 'A') + ' key)"' +
          ' onclick="event.stopPropagation(); playQAPart(\'' + key + '\',\'' + part + '\',this)">🔊</button>';
 }
 function qaPairHTML(v, jpSide) {
