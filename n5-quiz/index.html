@@ -1486,6 +1486,24 @@ const VOCAB_SETS = [
 ];
 
 // ─────────────────────────────────────────────────────────────
+// FURIGANA NORMALIZATION
+// ─────────────────────────────────────────────────────────────
+// The furigana/qf/af strings above are hand-authored, and it's easy to wrap a
+// whole word in <ruby> when only its kanji core needs annotating — e.g.
+// <ruby>ニット帽<rt>ニットぼう</rt></ruby> renders ニット on top of ニット, which
+// is just noise. Re-run every pre-baked tag through rubyFromReading so kana that
+// already match on either end get trimmed back out. Readings that share no kana
+// with their base (6時→ろくじ, ヶ月→かげつ) are left whole, since there the
+// annotation is carrying the numeral/counter reading and is worth showing.
+function normalizeRubyHTML(html) {
+  return html.replace(/<ruby>(.*?)<rt>(.*?)<\/rt><\/ruby>/g,
+                      (_tag, base, reading) => rubyFromReading(base, reading));
+}
+VOCAB_SETS.forEach(set => (set.words || []).forEach(w => {
+  ['furigana', 'qf', 'af'].forEach(f => { if (w[f]) w[f] = normalizeRubyHTML(w[f]); });
+}));
+
+// ─────────────────────────────────────────────────────────────
 // STATE
 // ─────────────────────────────────────────────────────────────
 const scores  = {};            // "setId:idx" → 0..5
