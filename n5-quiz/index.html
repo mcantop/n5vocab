@@ -142,7 +142,7 @@ body { background: var(--bg); color: var(--text); font-family: -apple-system, Bl
   background: var(--bg2);
   border: 0.5px solid var(--border2);
   border-radius: 16px;
-  padding: 2.25rem 1.5rem 1.75rem;
+  padding: 2.25rem 1.5rem 3.6rem;
   text-align: center;
   min-height: 210px;
   display: flex;
@@ -172,12 +172,14 @@ body { background: var(--bg); color: var(--text); font-family: -apple-system, Bl
 .card-body { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 0; }
 .card-body.flip-out { animation: flipOut 0.18s ease both; }
 .card-body.flip-in  { animation: flipIn  0.18s ease both; }
-.card-top { position: absolute; top: 14px; left: 0; right: 64px; display: flex; justify-content: flex-start; gap: 10px; padding: 0 16px; }
+.card-top { position: absolute; top: 14px; left: 0; right: 0; display: flex;
+            align-items: baseline; gap: 10px; padding: 0 16px; z-index: 2; }
 .card-counter { font-size: 11px; color: var(--text3); }
 .card-set-badge { font-size: 11px; color: var(--text3); }
 
 /* unified type scale — everything inherits the same rhythm */
-.prompt-lang { font-size: 10px; color: var(--text3); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 1rem; }
+.prompt-lang { font-size: 10px; color: var(--text3); letter-spacing: 0.1em;
+               text-transform: uppercase; margin-left: auto; }
 .prompt-text { font-size: 22px; font-weight: 500; color: var(--text); line-height: 2.1; max-width: 100%; }
 .prompt-sub  { font-size: 14px; color: var(--text2); margin-top: 0.3rem; }
 
@@ -273,27 +275,43 @@ rt { font-size: 0.5em; color: var(--text2); font-weight: 400; }
 .panel-title { font-size: 13px; font-weight: 600; color: var(--text); letter-spacing: 0.02em; }
 .panel-section { display: flex; flex-direction: column; gap: 8px; }
 .panel-label { font-size: 11px; color: var(--text3); letter-spacing: 0.08em; text-transform: uppercase; }
-.panel-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-.panel-chip {
-  font-size: 14px; padding: 9px 15px; min-height: 44px;
+/* set picker — one row per volume, one column per card type. Tapping the
+   volume name or a column header toggles that whole row / column. */
+.panel-label-row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.panel-mini {
+  font-size: 11px; padding: 4px 8px; border-radius: 6px;
+  border: 0.5px solid var(--border2); background: transparent; color: var(--text3);
+  cursor: pointer; transition: all 0.15s; touch-action: manipulation;
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
+}
+.panel-mini:hover { background: var(--bg3); color: var(--text2); }
+.set-grid { display: grid; grid-template-columns: minmax(56px, auto) repeat(3, 1fr); gap: 4px; }
+.set-head, .set-vol, .set-cell {
+  font-size: 13px; min-height: 40px;
   display: inline-flex; align-items: center; justify-content: center;
-  border: 0.5px solid var(--border2); border-radius: 22px;
+  border: 0.5px solid transparent; border-radius: 10px;
   background: transparent; color: var(--text2);
   cursor: pointer; transition: all 0.15s; user-select: none; -webkit-user-select: none;
   touch-action: manipulation; -webkit-tap-highlight-color: rgba(0,0,0,0);
 }
-.panel-chip:active { transform: scale(0.96); }
-.panel-chip:hover { background: var(--bg3); color: var(--text); }
-.panel-chip.active { background: var(--accent-bg); border-color: var(--accent-border); color: var(--accent); font-weight: 500; }
-@keyframes chipShake {
-  0%,100% { transform: translateX(0); }
-  20%      { transform: translateX(-5px); }
-  40%      { transform: translateX(5px); }
-  60%      { transform: translateX(-4px); }
-  80%      { transform: translateX(4px); }
+.set-head {
+  font-size: 10px; min-height: 26px; color: var(--text3);
+  letter-spacing: 0.06em; text-transform: uppercase;
 }
-.panel-chip.shake { animation: chipShake 0.35s ease; }
-.chip-count { font-size: 10px; opacity: 0.6; margin-left: 3px; }
+.set-vol { justify-content: flex-start; padding-left: 4px; color: var(--text2); }
+.set-cell { border-color: var(--border2); color: var(--text3); }
+.set-cell:hover, .set-vol:hover, .set-head:hover { background: var(--bg3); color: var(--text); }
+.set-cell:active, .set-vol:active, .set-head:active { transform: scale(0.96); }
+.set-cell.active {
+  background: var(--accent-bg); border-color: var(--accent-border);
+  color: var(--accent); font-weight: 500;
+}
+.set-vol.active, .set-head.active { color: var(--accent); font-weight: 600; }
+.set-summary { font-size: 11px; color: var(--text3); }
+.panel-details > summary { cursor: pointer; list-style: none; padding: 4px 0; }
+.panel-details > summary::-webkit-details-marker { display: none; }
+.panel-details > summary::before { content: '▸ '; }
+.panel-details[open] > summary::before { content: '▾ '; }
 .panel-divider { height: 0.5px; background: var(--border); }
 
 .panel-row { display: flex; gap: 8px; }
@@ -357,13 +375,51 @@ rt { font-size: 0.5em; color: var(--text2); font-weight: 400; }
 .rep-toggle:hover { background: var(--bg4); color: var(--text); }
 /* hidden answer = blurred in place: keeps the prompt readable, no layout shift,
    no empty gap. Tap "Show answer" / press H to bring it into focus. */
-#arev, #card-hint, #user-attempt { transition: filter 0.2s ease; }
+#arev, #card-hint, #user-attempt { transition: filter 0.2s ease, opacity 0.2s ease; }
 .card-body.answer-hidden #arev,
 .card-body.answer-hidden #card-hint,
 .card-body.answer-hidden #user-attempt {
   filter: blur(8px);
   user-select: none;
 }
+
+/* Un-revealed answer. It is rendered and laid out from the moment the card
+   appears — so the card is already its final height and nothing below it
+   jumps on reveal — but blurred hard enough to be unreadable. Revealing
+   only lifts the blur. */
+.masked {
+  filter: blur(9px);
+  opacity: 0.32;
+  user-select: none; -webkit-user-select: none;
+  pointer-events: none;
+}
+
+/* keyboard hints on the listen buttons — desktop only */
+/* Legible on any parent. Inheriting currentColor made the badge vanish on the
+   deliberately-dimmed buttons (Show hint is --text3 on a dark card). */
+kbd.key {
+  font: inherit; font-size: 10px; line-height: 1;
+  display: inline-block; padding: 3px 5px; margin-left: 7px;
+  background: var(--bg3); color: var(--text2);
+  border: 0.5px solid var(--border2); border-radius: 4px;
+  letter-spacing: 0.04em; vertical-align: middle;
+}
+@media (hover: none), (pointer: coarse) { kbd.key { display: none; } }
+
+.key-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; padding: 7px 0;
+  border-bottom: 0.5px solid var(--border);
+}
+.key-row:last-child { border-bottom: 0; }
+.key-desc { font-size: 14px; color: var(--text2); }
+kbd.key-lg {
+  font-size: 12px; padding: 5px 9px; margin: 0; opacity: 1;
+  min-width: 30px; text-align: center; color: var(--text3);
+  border-color: var(--border2);
+}
+/* the sheet is the one place these stay visible on touch, as documentation */
+@media (hover: none), (pointer: coarse) { kbd.key-lg { display: inline-block; } }
 @keyframes repPop {
   0%   { transform: scale(1); }
   40%  { transform: scale(1.18); }
@@ -384,32 +440,35 @@ rt { font-size: 0.5em; color: var(--text2); font-weight: 400; }
 .summary-stat-lbl { font-size: 10px; color: var(--text2); margin-top: 3px; text-transform: uppercase; letter-spacing: 0.04em; }
 
 /* ── AUDIO ── */
-.prompt-lang-row { display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 1rem; }
-.prompt-lang-row .prompt-lang { margin-bottom: 0; }
-
-/* ── QA INLINE AUDIO ── */
-.qa-audio-btn {
+/* primary speaker button — a full-width row under the card, so it's a thumb
+   target rather than a 44px dot in the corner of a card that's also tappable */
+/* prev / next ride in the card's bottom corners. The card reserves bottom
+   padding to match, so content never runs underneath them. */
+.nav-btn {
+  position: absolute; bottom: 12px; z-index: 3;
   display: inline-flex; align-items: center; justify-content: center;
-  width: 36px; height: 36px; margin: 0 8px 0 2px; flex: 0 0 auto;
-  background: var(--bg3); border: 0.5px solid var(--border2); color: var(--text2);
-  border-radius: 50%; cursor: pointer; font-size: 16px; line-height: 1;
-  transition: all 0.15s; vertical-align: middle;
+  width: 38px; height: 38px; font-size: 17px; line-height: 1;
+  border: 0.5px solid var(--border2); border-radius: 50%;
+  background: transparent; color: var(--text2);
+  cursor: pointer; transition: all 0.15s; user-select: none; -webkit-user-select: none;
   touch-action: manipulation; -webkit-tap-highlight-color: rgba(0,0,0,0);
-  user-select: none; -webkit-user-select: none;
 }
-.qa-audio-btn:hover { background: var(--bg4); color: var(--text); }
-.qa-audio-btn:active { transform: scale(0.9); }
-.qa-audio-btn.playing { color: var(--accent); border-color: var(--accent-border); background: var(--accent-bg); }
+#nav-prev { left: 8px; }
+#nav-next { right: 8px; }
+.nav-btn:hover:not(:disabled) { background: var(--bg3); color: var(--text); }
+.nav-btn:active:not(:disabled) { transform: scale(0.94); }
+.nav-btn:disabled { opacity: 0.25; cursor: default; }
 
-/* primary speaker button on the card — large, obvious tap target */
-#card-audio {
-  position: absolute; top: 10px; right: 10px; z-index: 3;
-  width: 44px; height: 44px; font-size: 20px; margin: 0;
+.listen-row { display: flex; gap: 8px; margin-bottom: 0.7rem; }
+.listen-btn {
   background: var(--accent-bg); border: 1px solid var(--accent-border); color: var(--accent);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  font-size: 15px; gap: 8px; letter-spacing: 0.02em;
 }
-#card-audio:active { transform: scale(0.92); }
-#card-audio.playing { background: var(--accent); color: #fff; border-color: var(--accent); }
+.listen-btn:hover { background: var(--accent-bg); color: var(--accent); filter: brightness(1.25); }
+.listen-btn .listen-ico { font-size: 18px; line-height: 1; }
+.listen-btn.playing { background: var(--accent); color: #fff; border-color: var(--accent); }
+.listen-btn.playing .listen-ico { animation: listenPulse 0.9s ease-in-out infinite; }
+@keyframes listenPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.45; } }
 
 /* ── ALIGNER ── */
 
@@ -455,6 +514,7 @@ rt { font-size: 0.5em; color: var(--text2); font-weight: 400; }
   <div class="topbar">
     <div class="topbar-left">練習</div>
     <div class="topbar-right">
+      <button type="button" class="pill-btn" id="btn-open-practice">📚 Practice</button>
       <button type="button" class="pill-btn" id="btn-open-config">⚙ Config</button>
       <button type="button" class="pill-btn" id="btn-open-stats">📊 Stats</button>
     </div>
@@ -476,6 +536,7 @@ rt { font-size: 0.5em; color: var(--text2); font-weight: 400; }
           }
         });
       }
+      bind('btn-open-practice', 'practice');
       bind('btn-open-config', 'config');
       bind('btn-open-stats', 'stats');
     })();
@@ -493,13 +554,13 @@ rt { font-size: 0.5em; color: var(--text2); font-weight: 400; }
     <div class="card-top">
       <span class="card-counter" id="counter"></span>
       <span class="card-set-badge" id="set-badge"></span>
+      <span class="prompt-lang" id="plang"></span>
     </div>
+    <button class="nav-btn" id="nav-prev" onclick="event.stopPropagation(); prevCard()"
+            title="Previous card (← key)" aria-label="Previous card">←</button>
+    <button class="nav-btn" id="nav-next" onclick="event.stopPropagation(); nextCard()"
+            title="Next card (→ key)" aria-label="Next card">→</button>
     <div class="card-body" id="card-body">
-      <div class="prompt-lang-row">
-        <span class="prompt-lang" id="plang"></span>
-        <button class="qa-audio-btn" id="card-audio" style="display:none" aria-label="Play audio" title="Play audio (P)"
-                onclick="event.stopPropagation(); playCurrentAudio()">🔊</button>
-      </div>
       <div class="prompt-text" id="ptext">Select sets in Config to start.</div>
       <div class="prompt-sub"  id="psub"></div>
       <div class="card-divider" id="card-divider" style="display:none"></div>
@@ -507,10 +568,13 @@ rt { font-size: 0.5em; color: var(--text2); font-weight: 400; }
       <div class="user-attempt" id="user-attempt" style="display:none"></div>
       <div class="card-hint-bottom" id="card-hint" style="display:none"></div>
       <button class="rep-toggle" id="rep-toggle" style="display:none"
-              onclick="event.stopPropagation(); toggleAnswer();" title="Toggle answer (H)">Toggle answer</button>
+              onclick="event.stopPropagation(); toggleAnswer();" title="Toggle answer (B)">Toggle answer<kbd class="key">B</kbd></button>
     </div>
 
   </div>
+
+  <!-- LISTEN — its own full-width target under the card, not a dot on it -->
+  <div class="listen-row" id="listen-row" style="display:none"></div>
 
   <!-- ACTION ZONE -->
   <div class="action-zone">
@@ -520,11 +584,11 @@ rt { font-size: 0.5em; color: var(--text2); font-weight: 400; }
       <button class="btn btn-check" onclick="checkAnswer()">Check</button>
     </div>
     <div class="action-row" id="brow-grade">
-      <button class="btn danger"  onclick="markResult(false)">✕ Missed</button>
-      <button class="btn success" onclick="markResult(true)">✓ Got it</button>
+      <button class="btn danger"  onclick="markResult(false)">✕ Missed<kbd class="key">M</kbd></button>
+      <button class="btn success" onclick="markResult(true)">✓ Got it<kbd class="key">G</kbd></button>
     </div>
     <div class="action-row" id="brow-hint">
-      <button class="btn" onclick="revealVocabHint()" style="color:var(--text3)">Show hint</button>
+      <button class="btn" onclick="revealVocabHint()" style="color:var(--text3)">Show hint<kbd class="key">H</kbd></button>
     </div>
     <div class="action-row" id="brow-next"></div>
   </div>
@@ -557,26 +621,35 @@ rt { font-size: 0.5em; color: var(--text2); font-weight: 400; }
 
 </div>
 
+<!-- ── KEYBOARD SHORTCUTS PANEL ── -->
+<div class="panel-overlay" id="panel-keys" onclick="closePanelOutside(event,'panel-keys')">
+  <div class="panel">
+    <div class="panel-handle"></div>
+    <div class="panel-title">Keyboard</div>
+    <div id="keys-body"></div>
+  </div>
+</div>
+
+<!-- ── PRACTICE PANEL ── -->
+<div class="panel-overlay" id="panel-practice" onclick="closePanelOutside(event,'panel-practice')">
+  <div class="panel">
+    <div class="panel-handle"></div>
+    <div class="panel-label-row">
+      <span class="panel-title">Practice</span>
+      <button class="panel-mini" onclick="clearSets()">Clear all</button>
+    </div>
+    <div class="panel-section">
+      <div class="set-grid" id="practice-set-grid"></div>
+      <div class="set-summary" id="practice-set-summary"></div>
+    </div>
+  </div>
+</div>
+
 <!-- ── CONFIG PANEL ── -->
 <div class="panel-overlay" id="panel-config" onclick="closePanelOutside(event,'panel-config')">
   <div class="panel">
     <div class="panel-handle"></div>
     <div class="panel-title">Config</div>
-
-    <div class="panel-section">
-      <div class="panel-label">Vocabulary</div>
-      <div class="panel-chips" id="cfg-chips-vocab"></div>
-    </div>
-    <div class="panel-section">
-      <div class="panel-label">Sentences</div>
-      <div class="panel-chips" id="cfg-chips-sent"></div>
-    </div>
-    <div class="panel-section">
-      <div class="panel-label">Q&amp;A</div>
-      <div class="panel-chips" id="cfg-chips-qa"></div>
-    </div>
-
-    <div class="panel-divider"></div>
 
     <div class="panel-section">
       <div class="panel-label">Direction</div>
@@ -640,8 +713,10 @@ rt { font-size: 0.5em; color: var(--text2); font-weight: 400; }
     <div class="panel-section">
       <div class="panel-label">Reset progress</div>
       <button class="panel-btn danger" style="width:100%;text-align:left" onclick="resetAllData()">↺ Reset everything</button>
-      <div class="panel-label" style="margin-top:4px">Reset by set</div>
-      <div id="cfg-reset-btns" style="display:flex;flex-direction:column;gap:6px"></div>
+      <details class="panel-details">
+        <summary class="panel-label">Reset by set</summary>
+        <div id="cfg-reset-btns" style="display:flex;flex-direction:column;gap:6px;margin-top:8px"></div>
+      </details>
     </div>
 
   </div>
@@ -670,6 +745,7 @@ rt { font-size: 0.5em; color: var(--text2); font-weight: 400; }
 <script>
 window.QUIZ_AUDIO = { clips: {"7:0": ["Vol3_Vocab_N5.mp3", 16.44, 18.91], "8:0": ["Vol3_Vocab_N5.mp3", 20.88, 24.83], "8:1": ["Vol3_Vocab_N5.mp3", 28.47, 33.43], "7:1": ["Vol3_Vocab_N5.mp3", 37.0, 39.51], "8:2": ["Vol3_Vocab_N5.mp3", 41.78, 46.45], "8:3": ["Vol3_Vocab_N5.mp3", 50.86, 54.57], "7:2": ["Vol3_Vocab_N5.mp3", 58.78, 62.25], "8:4": ["Vol3_Vocab_N5.mp3", 64.76, 70.72], "8:5": ["Vol3_Vocab_N5.mp3", 75.42, 80.98], "7:3": ["Vol3_Vocab_N5.mp3", 84.84, 87.59], "8:6": ["Vol3_Vocab_N5.mp3", 90.04, 94.57], "8:7": ["Vol3_Vocab_N5.mp3", 98.16, 103.54], "7:4": ["Vol3_Vocab_N5.mp3", 107.35, 110.13], "8:8": ["Vol3_Vocab_N5.mp3", 112.67, 117.9], "8:9": ["Vol3_Vocab_N5.mp3", 121.44, 127.04], "7:5": ["Vol3_Vocab_N5.mp3", 130.58, 133.03], "8:10": ["Vol3_Vocab_N5.mp3", 135.45, 140.42], "8:11": ["Vol3_Vocab_N5.mp3", 144.88, 151.63], "7:6": ["Vol3_Vocab_N5.mp3", 154.96, 157.65], "8:12": ["Vol3_Vocab_N5.mp3", 159.99, 163.44], "8:13": ["Vol3_Vocab_N5.mp3", 167.56, 172.12], "7:7": ["Vol3_Vocab_N5.mp3", 176.54, 178.95], "8:14": ["Vol3_Vocab_N5.mp3", 182.18, 186.33], "8:15": ["Vol3_Vocab_N5.mp3", 190.79, 198.7], "7:8": ["Vol3_Vocab_N5.mp3", 203.07, 206.66], "8:16": ["Vol3_Vocab_N5.mp3", 210.02, 214.61], "8:17": ["Vol3_Vocab_N5.mp3", 218.66, 224.27], "7:9": ["Vol3_Vocab_N5.mp3", 228.57, 232.19], "8:18": ["Vol3_Vocab_N5.mp3", 235.21, 241.22], "8:19": ["Vol3_Vocab_N5.mp3", 245.37, 251.93], "7:10": ["Vol3_Vocab_N5.mp3", 255.87, 258.41], "8:20": ["Vol3_Vocab_N5.mp3", 260.99, 265.71], "8:21": ["Vol3_Vocab_N5.mp3", 270.01, 273.82], "7:11": ["Vol3_Vocab_N5.mp3", 277.54, 280.41], "8:22": ["Vol3_Vocab_N5.mp3", 282.87, 288.13], "8:23": ["Vol3_Vocab_N5.mp3", 291.76, 296.85], "7:12": ["Vol3_Vocab_N5.mp3", 300.05, 302.34], "8:24": ["Vol3_Vocab_N5.mp3", 304.69, 308.29], "8:25": ["Vol3_Vocab_N5.mp3", 312.03, 316.86], "7:13": ["Vol3_Vocab_N5.mp3", 320.46, 327.45], "8:26": ["Vol3_Vocab_N5.mp3", 331.26, 336.85], "8:27": ["Vol3_Vocab_N5.mp3", 342.11, 348.31], "10:23": ["Vol4_Vocab.mp3", 18.22, 21.96], "11:0": ["Vol4_Vocab.mp3", 24.15, 28.81], "11:1": ["Vol4_Vocab.mp3", 32.31, 36.0], "10:4": ["Vol4_Vocab.mp3", 39.81, 42.34], "11:2": ["Vol4_Vocab.mp3", 44.51, 48.25], "11:3": ["Vol4_Vocab.mp3", 52.35, 56.47], "10:2": ["Vol4_Vocab.mp3", 59.75, 62.54], "11:4": ["Vol4_Vocab.mp3", 65.12, 69.4], "11:5": ["Vol4_Vocab.mp3", 73.58, 76.49], "10:15": ["Vol4_Vocab.mp3", 80.15, 82.62], "11:6": ["Vol4_Vocab.mp3", 85.12, 90.44], "11:7": ["Vol4_Vocab.mp3", 94.59, 98.94], "10:17": ["Vol4_Vocab.mp3", 102.73, 108.99], "11:8": ["Vol4_Vocab.mp3", 112.29, 116.09], "11:9": ["Vol4_Vocab.mp3", 120.96, 127.79], "10:19": ["Vol4_Vocab.mp3", 131.33, 134.26], "11:10": ["Vol4_Vocab.mp3", 137.17, 141.49], "11:11": ["Vol4_Vocab.mp3", 145.3, 150.47], "10:13": ["Vol4_Vocab.mp3", 154.27, 157.95], "11:12": ["Vol4_Vocab.mp3", 160.84, 166.52], "11:13": ["Vol4_Vocab.mp3", 170.69, 177.69], "10:12": ["Vol4_Vocab.mp3", 181.35, 184.23], "11:14": ["Vol4_Vocab.mp3", 186.59, 191.85], "11:15": ["Vol4_Vocab.mp3", 195.89, 201.83], "10:11": ["Vol4_Vocab.mp3", 205.46, 208.1], "11:16": ["Vol4_Vocab.mp3", 210.83, 215.45], "11:17": ["Vol4_Vocab.mp3", 219.79, 223.81], "10:0": ["Vol4_Vocab.mp3", 227.7, 230.0], "11:18": ["Vol4_Vocab.mp3", 232.54, 237.7], "11:19": ["Vol4_Vocab.mp3", 242.14, 248.88], "10:21": ["Vol4_Vocab.mp3", 252.59, 260.15], "11:20": ["Vol4_Vocab.mp3", 263.92, 267.92], "11:21": ["Vol4_Vocab.mp3", 272.24, 277.96], "11:22": ["Vol4_Vocab.mp3", 281.55, 284.76], "10:8": ["Vol4_Vocab.mp3", 288.14, 291.07], "11:23": ["Vol4_Vocab.mp3", 293.49, 299.42], "11:24": ["Vol4_Vocab.mp3", 303.55, 309.27], "10:9": ["Vol4_Vocab.mp3", 312.67, 315.64], "11:25": ["Vol4_Vocab.mp3", 318.03, 323.07], "11:26": ["Vol4_Vocab.mp3", 328.07, 335.42], "10:25": ["Vol4_Vocab.mp3", 339.37, 343.92], "11:27": ["Vol4_Vocab.mp3", 346.53, 351.92], "11:28": ["Vol4_Vocab.mp3", 357.25, 362.79], "10:3": ["Vol4_Vocab.mp3", 366.42, 369.44], "11:29": ["Vol4_Vocab.mp3", 372.34, 377.39], "11:30": ["Vol4_Vocab.mp3", 382.26, 389.05], "10:10": ["Vol4_Vocab.mp3", 392.61, 395.42], "11:31": ["Vol4_Vocab.mp3", 398.27, 405.02], "11:32": ["Vol4_Vocab.mp3", 409.93, 413.76], "11:33": ["Vol4_Vocab.mp3", 425.31, 429.73], "11:34": ["Vol4_Vocab.mp3", 434.22, 438.23], "10:5": ["Vol4_Vocab.mp3", 441.76, 444.58], "11:35": ["Vol4_Vocab.mp3", 447.19, 452.04], "11:36": ["Vol4_Vocab.mp3", 454.45, 459.48], "10:6": ["Vol4_Vocab.mp3", 462.75, 465.03], "11:37": ["Vol4_Vocab.mp3", 467.21, 471.06], "11:38": ["Vol4_Vocab.mp3", 474.44, 478.84], "10:1": ["Vol4_Vocab.mp3", 482.57, 486.45], "11:39": ["Vol4_Vocab.mp3", 489.18, 494.32], "11:40": ["Vol4_Vocab.mp3", 499.38, 505.5], "10:14": ["Vol4_Vocab.mp3", 508.8, 513.71], "11:41": ["Vol4_Vocab.mp3", 516.41, 520.26], "11:42": ["Vol4_Vocab.mp3", 524.17, 528.05], "10:22": ["Vol4_Vocab.mp3", 531.73, 536.08], "11:43": ["Vol4_Vocab.mp3", 538.78, 544.52], "11:44": ["Vol4_Vocab.mp3", 548.63, 555.06], "10:26": ["Vol4_Vocab.mp3", 558.97, 563.43], "11:45": ["Vol4_Vocab.mp3", 566.1, 569.21], "11:46": ["Vol4_Vocab.mp3", 573.53, 583.27], "10:7": ["Vol4_Vocab.mp3", 586.38, 588.86], "11:47": ["Vol4_Vocab.mp3", 590.9, 595.54], "11:48": ["Vol4_Vocab.mp3", 599.3, 604.48], "10:24": ["Vol4_Vocab.mp3", 607.78, 610.95], "11:49": ["Vol4_Vocab.mp3", 613.4, 617.18], "11:50": ["Vol4_Vocab.mp3", 620.48, 625.64], "10:20": ["Vol4_Vocab.mp3", 629.15, 631.65], "11:51": ["Vol4_Vocab.mp3", 633.91, 638.54], "11:52": ["Vol4_Vocab.mp3", 642.65, 648.65], "10:18": ["Vol4_Vocab.mp3", 652.51, 655.57], "11:53": ["Vol4_Vocab.mp3", 657.9, 661.14], "11:54": ["Vol4_Vocab.mp3", 664.79, 670.91], "12:0": ["Vol4_QA.mp3", 23.31, 33.58], "12:1": ["Vol4_QA.mp3", 33.58, 50.69], "12:2": ["Vol4_QA.mp3", 50.69, 63.27], "12:3": ["Vol4_QA.mp3", 63.27, 76.45], "12:4": ["Vol4_QA.mp3", 76.45, 92.94], "12:5": ["Vol4_QA.mp3", 92.94, 106.72], "12:6": ["Vol4_QA.mp3", 106.72, 122.65], "12:7": ["Vol4_QA.mp3", 122.65, 137.72], "12:8": ["Vol4_QA.mp3", 137.72, 149.03], "12:9": ["Vol4_QA.mp3", 149.03, 169.56], "12:0:q": ["Vol4_QA.mp3", 8.12, 11.07], "12:0:a": ["Vol4_QA.mp3", 11.67, 18.42], "12:1:q": ["Vol4_QA.mp3", 18.83, 22.4], "12:1:a": ["Vol4_QA.mp3", 23.31, 33.34], "12:2:q": ["Vol4_QA.mp3", 33.92, 37.94], "12:2:a": ["Vol4_QA.mp3", 38.34, 45.59], "12:3:q": ["Vol4_QA.mp3", 46.17, 50.03], "12:3:a": ["Vol4_QA.mp3", 51.45, 63.07], "12:4:q": ["Vol4_QA.mp3", 63.56, 68.44], "12:4:a": ["Vol4_QA.mp3", 70.23, 79.68], "12:5:q": ["Vol4_QA.mp3", 80.19, 83.88], "12:5:a": ["Vol4_QA.mp3", 86.35, 98.68], "12:6:q": ["Vol4_QA.mp3", 99.95, 105.81], "12:6:a": ["Vol4_QA.mp3", 107.73, 116.43], "12:7:q": ["Vol4_QA.mp3", 117.03, 122.26], "12:7:a": ["Vol4_QA.mp3", 123.13, 132.39], "12:8:q": ["Vol4_QA.mp3", 133.45, 137.21], "12:8:a": ["Vol4_QA.mp3", 138.32, 148.64], "12:9:q": ["Vol4_QA.mp3", 149.53, 154.6], "12:9:a": ["Vol4_QA.mp3", 155.74, 167.36]} };
 Object.assign(window.QUIZ_AUDIO.clips, {"13:0": ["Vol5_Vocab.mp3", 17.96, 20.66], "14:0": ["Vol5_Vocab.mp3", 22.79, 26.27], "14:1": ["Vol5_Vocab.mp3", 29.52, 32.38], "13:1": ["Vol5_Vocab.mp3", 35.16, 37.56], "14:2": ["Vol5_Vocab.mp3", 39.44, 42.95], "14:3": ["Vol5_Vocab.mp3", 46.75, 50.96], "13:2": ["Vol5_Vocab.mp3", 54.19, 58.73], "14:4": ["Vol5_Vocab.mp3", 61.47, 65.18], "14:5": ["Vol5_Vocab.mp3", 68.83, 71.64], "13:3": ["Vol5_Vocab.mp3", 75.03, 79.48], "14:6": ["Vol5_Vocab.mp3", 82.67, 87.2], "14:7": ["Vol5_Vocab.mp3", 91.66, 96.81], "13:4": ["Vol5_Vocab.mp3", 100.9, 104.78], "14:8": ["Vol5_Vocab.mp3", 107.22, 110.56], "14:9": ["Vol5_Vocab.mp3", 114.15, 119.24], "13:5": ["Vol5_Vocab.mp3", 122.43, 126.66], "14:10": ["Vol5_Vocab.mp3", 129.16, 134.25], "14:11": ["Vol5_Vocab.mp3", 137.54, 142.57], "13:6": ["Vol5_Vocab.mp3", 145.59, 149.7], "14:12": ["Vol5_Vocab.mp3", 152.35, 155.27], "14:13": ["Vol5_Vocab.mp3", 159.1, 163.65], "13:7": ["Vol5_Vocab.mp3", 166.78, 169.56], "14:14": ["Vol5_Vocab.mp3", 171.51, 175.94], "14:15": ["Vol5_Vocab.mp3", 178.95, 183.5], "13:8": ["Vol5_Vocab.mp3", 187.54, 190.12], "14:16": ["Vol5_Vocab.mp3", 192.8, 197.41], "14:17": ["Vol5_Vocab.mp3", 202.24, 206.18], "13:9": ["Vol5_Vocab.mp3", 210.06, 214.5], "14:18": ["Vol5_Vocab.mp3", 217.68, 222.86], "14:19": ["Vol5_Vocab.mp3", 227.07, 232.4], "13:10": ["Vol5_Vocab.mp3", 235.92, 238.86], "14:20": ["Vol5_Vocab.mp3", 241.53, 246.36], "14:21": ["Vol5_Vocab.mp3", 251.13, 255.39], "13:11": ["Vol5_Vocab.mp3", 259.06, 261.65], "14:22": ["Vol5_Vocab.mp3", 264.14, 270.58], "14:23": ["Vol5_Vocab.mp3", 275.2, 279.16], "13:12": ["Vol5_Vocab.mp3", 282.41, 284.72], "14:24": ["Vol5_Vocab.mp3", 287.01, 292.52], "14:25": ["Vol5_Vocab.mp3", 296.67, 303.85], "13:13": ["Vol5_Vocab.mp3", 307.24, 309.82], "14:26": ["Vol5_Vocab.mp3", 312.37, 318.54], "14:27": ["Vol5_Vocab.mp3", 323.41, 330.06], "13:14": ["Vol5_Vocab.mp3", 335.16, 338.51], "14:28": ["Vol5_Vocab.mp3", 341.48, 346.26], "14:29": ["Vol5_Vocab.mp3", 351.85, 358.12], "13:15": ["Vol5_Vocab.mp3", 362.49, 366.97], "14:30": ["Vol5_Vocab.mp3", 370.77, 376.67], "14:31": ["Vol5_Vocab.mp3", 381.21, 385.37], "13:16": ["Vol5_Vocab.mp3", 389.95, 392.81], "14:32": ["Vol5_Vocab.mp3", 395.04, 401.89], "14:33": ["Vol5_Vocab.mp3", 406.49, 412.85], "13:17": ["Vol5_Vocab.mp3", 416.27, 418.71], "14:34": ["Vol5_Vocab.mp3", 421.32, 425.03], "14:35": ["Vol5_Vocab.mp3", 428.82, 436.65], "13:18": ["Vol5_Vocab.mp3", 440.11, 442.68], "14:36": ["Vol5_Vocab.mp3", 445.28, 450.7], "14:37": ["Vol5_Vocab.mp3", 454.37, 460.78], "13:19": ["Vol5_Vocab.mp3", 464.2, 466.98], "14:38": ["Vol5_Vocab.mp3", 469.69, 474.47], "14:39": ["Vol5_Vocab.mp3", 478.1, 482.19], "13:20": ["Vol5_Vocab.mp3", 485.87, 489.15], "14:40": ["Vol5_Vocab.mp3", 491.63, 496.37], "14:41": ["Vol5_Vocab.mp3", 499.89, 505.04], "13:21": ["Vol5_Vocab.mp3", 508.35, 511.18], "14:42": ["Vol5_Vocab.mp3", 513.44, 517.14], "14:43": ["Vol5_Vocab.mp3", 520.88, 526.52], "13:22": ["Vol5_Vocab.mp3", 530.97, 535.23], "14:44": ["Vol5_Vocab.mp3", 538.17, 542.36], "14:45": ["Vol5_Vocab.mp3", 546.56, 551.53], "13:23": ["Vol5_Vocab.mp3", 555.75, 558.34], "14:46": ["Vol5_Vocab.mp3", 560.88, 565.87], "14:47": ["Vol5_Vocab.mp3", 570.26, 575.58], "13:24": ["Vol5_Vocab.mp3", 580.06, 583.82], "14:48": ["Vol5_Vocab.mp3", 586.56, 591.99], "14:49": ["Vol5_Vocab.mp3", 596.79, 601.37], "13:25": ["Vol5_Vocab.mp3", 605.21, 608.26], "14:50": ["Vol5_Vocab.mp3", 611.11, 616.3], "14:51": ["Vol5_Vocab.mp3", 621.05, 626.36], "13:26": ["Vol5_Vocab.mp3", 630.8, 632.93], "14:52": ["Vol5_Vocab.mp3", 634.59, 639.15], "14:53": ["Vol5_Vocab.mp3", 643.29, 647.74], "13:27": ["Vol5_Vocab.mp3", 651.58, 654.66], "14:54": ["Vol5_Vocab.mp3", 657.47, 661.22], "14:55": ["Vol5_Vocab.mp3", 665.55, 670.61], "13:28": ["Vol5_Vocab.mp3", 674.62, 677.85], "14:56": ["Vol5_Vocab.mp3", 680.89, 684.0], "14:57": ["Vol5_Vocab.mp3", 688.72, 694.27], "13:29": ["Vol5_Vocab.mp3", 697.34, 700.62], "14:58": ["Vol5_Vocab.mp3", 703.3, 708.48], "14:59": ["Vol5_Vocab.mp3", 712.49, 717.83], "13:30": ["Vol5_Vocab.mp3", 722.01, 724.72], "14:60": ["Vol5_Vocab.mp3", 727.25, 734.28], "14:61": ["Vol5_Vocab.mp3", 739.36, 743.67], "13:31": ["Vol5_Vocab.mp3", 747.49, 750.0], "14:62": ["Vol5_Vocab.mp3", 752.66, 756.93], "14:63": ["Vol5_Vocab.mp3", 762.04, 770.82], "13:32": ["Vol5_Vocab.mp3", 774.93, 777.53], "14:64": ["Vol5_Vocab.mp3", 780.14, 785.68], "14:65": ["Vol5_Vocab.mp3", 790.8, 797.58], "13:33": ["Vol5_Vocab.mp3", 801.41, 803.86], "14:66": ["Vol5_Vocab.mp3", 806.23, 810.52], "14:67": ["Vol5_Vocab.mp3", 814.87, 818.66], "13:34": ["Vol5_Vocab.mp3", 822.07, 824.7], "14:68": ["Vol5_Vocab.mp3", 827.25, 833.89], "14:69": ["Vol5_Vocab.mp3", 839.21, 845.1], "13:35": ["Vol5_Vocab.mp3", 848.5, 851.26], "14:70": ["Vol5_Vocab.mp3", 853.19, 856.75], "14:71": ["Vol5_Vocab.mp3", 860.61, 866.23], "13:36": ["Vol5_Vocab.mp3", 868.74, 871.5], "14:72": ["Vol5_Vocab.mp3", 873.64, 878.22], "14:73": ["Vol5_Vocab.mp3", 882.82, 889.85], "13:37": ["Vol5_Vocab.mp3", 893.45, 896.61], "14:74": ["Vol5_Vocab.mp3", 898.99, 905.54], "14:75": ["Vol5_Vocab.mp3", 910.14, 915.42]});
+Object.assign(window.QUIZ_AUDIO.clips, {"15:0:q": ["Vol5_QA.mp3", 7.64, 11.34], "15:0:a": ["Vol5_QA.mp3", 11.42, 18.51], "15:1:q": ["Vol5_QA.mp3", 18.56, 22.82], "15:1:a": ["Vol5_QA.mp3", 22.87, 30.95], "15:2:q": ["Vol5_QA.mp3", 31.0, 35.31], "15:2:a": ["Vol5_QA.mp3", 35.36, 41.35], "15:3:q": ["Vol5_QA.mp3", 41.4, 46.34], "15:3:a": ["Vol5_QA.mp3", 46.43, 51.45], "15:4:q": ["Vol5_QA.mp3", 51.5, 57.6], "15:4:a": ["Vol5_QA.mp3", 57.65, 66.8], "15:5:q": ["Vol5_QA.mp3", 67.14, 70.63], "15:5:a": ["Vol5_QA.mp3", 71.13, 79.71], "15:6:q": ["Vol5_QA.mp3", 79.76, 84.64], "15:6:a": ["Vol5_QA.mp3", 84.69, 92.23], "15:7:q": ["Vol5_QA.mp3", 92.28, 97.7], "15:7:a": ["Vol5_QA.mp3", 97.75, 105.89], "15:8:q": ["Vol5_QA.mp3", 107.02, 113.15], "15:8:a": ["Vol5_QA.mp3", 114.76, 119.21], "15:9:q": ["Vol5_QA.mp3", 119.4, 123.16], "15:9:a": ["Vol5_QA.mp3", 123.21, 131.47], "16:0": ["Vol6_Vocab.mp3", 15.6, 17.92], "17:0": ["Vol6_Vocab.mp3", 20.57, 24.15], "17:1": ["Vol6_Vocab.mp3", 28.15, 32.92], "16:1": ["Vol6_Vocab.mp3", 35.33, 36.51], "17:2": ["Vol6_Vocab.mp3", 39.78, 42.62], "17:3": ["Vol6_Vocab.mp3", 46.22, 49.92], "17:4": ["Vol6_Vocab.mp3", 59.47, 66.87], "17:5": ["Vol6_Vocab.mp3", 70.85, 76.43], "16:3": ["Vol6_Vocab.mp3", 79.7, 81.15], "17:6": ["Vol6_Vocab.mp3", 83.71, 86.51], "17:7": ["Vol6_Vocab.mp3", 89.68, 95.64], "16:4": ["Vol6_Vocab.mp3", 98.84, 100.36], "17:8": ["Vol6_Vocab.mp3", 104.37, 107.89], "17:9": ["Vol6_Vocab.mp3", 111.42, 114.52], "16:5": ["Vol6_Vocab.mp3", 117.67, 119.3], "17:10": ["Vol6_Vocab.mp3", 123.58, 128.59], "17:11": ["Vol6_Vocab.mp3", 133.08, 137.26], "16:6": ["Vol6_Vocab.mp3", 141.21, 142.03], "17:12": ["Vol6_Vocab.mp3", 145.58, 150.1], "17:13": ["Vol6_Vocab.mp3", 153.8, 156.44], "16:7": ["Vol6_Vocab.mp3", 160.02, 161.26], "17:14": ["Vol6_Vocab.mp3", 164.76, 167.44], "17:15": ["Vol6_Vocab.mp3", 171.04, 178.45], "16:8": ["Vol6_Vocab.mp3", 181.65, 183.35], "17:16": ["Vol6_Vocab.mp3", 186.86, 191.25], "17:17": ["Vol6_Vocab.mp3", 194.96, 200.56], "16:9": ["Vol6_Vocab.mp3", 203.84, 205.22], "17:18": ["Vol6_Vocab.mp3", 208.54, 211.84], "17:19": ["Vol6_Vocab.mp3", 215.45, 221.77], "16:10": ["Vol6_Vocab.mp3", 224.8, 225.88], "17:20": ["Vol6_Vocab.mp3", 230.5, 236.19], "17:21": ["Vol6_Vocab.mp3", 240.2, 247.7], "16:11": ["Vol6_Vocab.mp3", 251.52, 253.34], "17:22": ["Vol6_Vocab.mp3", 257.08, 260.17], "17:23": ["Vol6_Vocab.mp3", 263.3, 269.41], "16:12": ["Vol6_Vocab.mp3", 272.43, 273.83], "17:24": ["Vol6_Vocab.mp3", 277.03, 280.47], "17:25": ["Vol6_Vocab.mp3", 284.42, 289.84], "16:13": ["Vol6_Vocab.mp3", 292.57, 293.91], "17:26": ["Vol6_Vocab.mp3", 297.55, 302.62], "17:27": ["Vol6_Vocab.mp3", 306.14, 310.47], "16:14": ["Vol6_Vocab.mp3", 313.82, 315.02], "17:28": ["Vol6_Vocab.mp3", 319.38, 323.36], "17:29": ["Vol6_Vocab.mp3", 327.2, 330.53], "16:15": ["Vol6_Vocab.mp3", 333.39, 334.48], "17:30": ["Vol6_Vocab.mp3", 338.41, 342.56], "17:31": ["Vol6_Vocab.mp3", 345.88, 350.61], "16:16": ["Vol6_Vocab.mp3", 353.6, 355.25], "17:32": ["Vol6_Vocab.mp3", 358.41, 364.89], "17:33": ["Vol6_Vocab.mp3", 368.17, 374.52], "16:17": ["Vol6_Vocab.mp3", 377.57, 379.2], "17:34": ["Vol6_Vocab.mp3", 382.4, 386.51], "17:35": ["Vol6_Vocab.mp3", 389.61, 395.17], "16:18": ["Vol6_Vocab.mp3", 398.28, 400.26], "17:36": ["Vol6_Vocab.mp3", 403.71, 410.69], "17:37": ["Vol6_Vocab.mp3", 414.34, 416.88], "16:19": ["Vol6_Vocab.mp3", 420.25, 422.13], "17:38": ["Vol6_Vocab.mp3", 427.2, 432.83], "17:39": ["Vol6_Vocab.mp3", 436.82, 442.06], "16:20": ["Vol6_Vocab.mp3", 444.9, 446.26], "17:40": ["Vol6_Vocab.mp3", 450.67, 460.39], "17:41": ["Vol6_Vocab.mp3", 460.44, 467.98], "16:21": ["Vol6_Vocab.mp3", 471.42, 473.05], "17:42": ["Vol6_Vocab.mp3", 476.65, 482.46], "17:43": ["Vol6_Vocab.mp3", 485.63, 491.34], "16:22": ["Vol6_Vocab.mp3", 494.28, 495.84], "17:44": ["Vol6_Vocab.mp3", 499.84, 503.54], "17:45": ["Vol6_Vocab.mp3", 507.39, 511.62], "16:23": ["Vol6_Vocab.mp3", 514.95, 516.11], "17:46": ["Vol6_Vocab.mp3", 519.92, 522.73], "17:47": ["Vol6_Vocab.mp3", 526.83, 531.56], "18:0:q": ["Vol6_QA.mp3", 7.68, 10.9], "18:0:a": ["Vol6_QA.mp3", 12.6, 19.12], "18:1:q": ["Vol6_QA.mp3", 19.17, 22.11], "18:1:a": ["Vol6_QA.mp3", 23.17, 30.3], "18:2:q": ["Vol6_QA.mp3", 31.08, 35.35], "18:2:a": ["Vol6_QA.mp3", 35.4, 45.07], "18:3:q": ["Vol6_QA.mp3", 45.12, 50.44], "18:3:a": ["Vol6_QA.mp3", 50.55, 58.63], "18:4:q": ["Vol6_QA.mp3", 58.68, 63.95], "18:4:a": ["Vol6_QA.mp3", 64.64, 71.46], "18:5:q": ["Vol6_QA.mp3", 71.51, 74.63], "18:5:a": ["Vol6_QA.mp3", 75.94, 80.78], "18:6:q": ["Vol6_QA.mp3", 81.5, 85.17], "18:6:a": ["Vol6_QA.mp3", 85.22, 90.83], "18:7:q": ["Vol6_QA.mp3", 90.88, 96.64], "18:7:a": ["Vol6_QA.mp3", 96.69, 110.06], "18:8:q": ["Vol6_QA.mp3", 110.68, 115.17], "18:8:a": ["Vol6_QA.mp3", 115.9, 124.99], "18:9:q": ["Vol6_QA.mp3", 125.04, 130.72], "18:9:a": ["Vol6_QA.mp3", 130.8, 141.7], "19:0": ["Vol7_Vocab.mp3", 21.0, 21.98], "20:0": ["Vol7_Vocab.mp3", 25.89, 28.26], "20:1": ["Vol7_Vocab.mp3", 31.87, 35.59], "19:1": ["Vol7_Vocab.mp3", 38.28, 39.22], "20:2": ["Vol7_Vocab.mp3", 43.3, 45.35], "20:3": ["Vol7_Vocab.mp3", 49.07, 53.44], "19:2": ["Vol7_Vocab.mp3", 57.38, 58.14], "20:4": ["Vol7_Vocab.mp3", 62.26, 64.94], "20:5": ["Vol7_Vocab.mp3", 68.59, 72.89], "19:3": ["Vol7_Vocab.mp3", 75.83, 76.75], "20:6": ["Vol7_Vocab.mp3", 81.3, 86.5], "20:7": ["Vol7_Vocab.mp3", 90.52, 95.76], "19:4": ["Vol7_Vocab.mp3", 99.94, 101.83], "20:8": ["Vol7_Vocab.mp3", 105.19, 109.47], "20:9": ["Vol7_Vocab.mp3", 114.21, 119.13], "19:5": ["Vol7_Vocab.mp3", 123.09, 124.48], "20:10": ["Vol7_Vocab.mp3", 128.65, 131.46], "20:11": ["Vol7_Vocab.mp3", 136.01, 140.44], "19:6": ["Vol7_Vocab.mp3", 144.06, 145.44], "20:12": ["Vol7_Vocab.mp3", 150.2, 156.78], "20:13": ["Vol7_Vocab.mp3", 160.44, 164.75], "19:7": ["Vol7_Vocab.mp3", 169.34, 170.06], "20:14": ["Vol7_Vocab.mp3", 174.28, 179.43], "20:15": ["Vol7_Vocab.mp3", 183.17, 188.65], "19:8": ["Vol7_Vocab.mp3", 192.01, 193.65], "20:16": ["Vol7_Vocab.mp3", 197.03, 204.53], "20:17": ["Vol7_Vocab.mp3", 208.19, 215.13], "19:9": ["Vol7_Vocab.mp3", 219.09, 219.81], "20:18": ["Vol7_Vocab.mp3", 223.02, 226.6], "20:19": ["Vol7_Vocab.mp3", 230.39, 236.06], "19:10": ["Vol7_Vocab.mp3", 240.49, 241.5], "20:20": ["Vol7_Vocab.mp3", 247.06, 249.43], "20:21": ["Vol7_Vocab.mp3", 253.8, 257.49], "19:11": ["Vol7_Vocab.mp3", 260.44, 261.96], "20:22": ["Vol7_Vocab.mp3", 265.89, 270.31], "20:23": ["Vol7_Vocab.mp3", 273.89, 277.75], "19:12": ["Vol7_Vocab.mp3", 282.17, 282.75], "20:24": ["Vol7_Vocab.mp3", 290.31, 293.13], "20:25": ["Vol7_Vocab.mp3", 297.25, 301.02], "19:13": ["Vol7_Vocab.mp3", 304.98, 306.39], "20:26": ["Vol7_Vocab.mp3", 313.02, 316.14], "20:27": ["Vol7_Vocab.mp3", 320.3, 325.47], "19:14": ["Vol7_Vocab.mp3", 329.64, 331.26], "20:28": ["Vol7_Vocab.mp3", 334.33, 338.45], "20:29": ["Vol7_Vocab.mp3", 342.65, 350.73], "19:15": ["Vol7_Vocab.mp3", 354.77, 355.62], "20:30": ["Vol7_Vocab.mp3", 359.99, 364.48], "20:31": ["Vol7_Vocab.mp3", 368.97, 372.69], "19:16": ["Vol7_Vocab.mp3", 376.85, 378.69], "20:32": ["Vol7_Vocab.mp3", 382.7, 386.46], "20:33": ["Vol7_Vocab.mp3", 390.76, 395.9], "19:17": ["Vol7_Vocab.mp3", 399.42, 400.51], "20:34": ["Vol7_Vocab.mp3", 405.45, 410.05], "20:35": ["Vol7_Vocab.mp3", 413.78, 419.68], "19:18": ["Vol7_Vocab.mp3", 423.79, 425.49], "20:36": ["Vol7_Vocab.mp3", 429.77, 435.1], "20:37": ["Vol7_Vocab.mp3", 439.28, 442.86], "19:19": ["Vol7_Vocab.mp3", 447.38, 449.08], "20:38": ["Vol7_Vocab.mp3", 453.04, 459.18], "20:39": ["Vol7_Vocab.mp3", 463.32, 468.67], "19:20": ["Vol7_Vocab.mp3", 473.22, 474.53], "20:40": ["Vol7_Vocab.mp3", 480.07, 485.39], "20:41": ["Vol7_Vocab.mp3", 489.35, 492.81], "19:21": ["Vol7_Vocab.mp3", 496.55, 498.08], "20:42": ["Vol7_Vocab.mp3", 502.69, 510.23], "20:43": ["Vol7_Vocab.mp3", 513.88, 519.02], "19:22": ["Vol7_Vocab.mp3", 522.55, 523.66], "20:44": ["Vol7_Vocab.mp3", 528.45, 536.22], "20:45": ["Vol7_Vocab.mp3", 540.33, 545.64], "19:23": ["Vol7_Vocab.mp3", 548.84, 549.66], "20:46": ["Vol7_Vocab.mp3", 554.58, 561.72], "20:47": ["Vol7_Vocab.mp3", 565.71, 570.7], "19:24": ["Vol7_Vocab.mp3", 573.88, 575.4], "20:48": ["Vol7_Vocab.mp3", 579.12, 582.76], "20:49": ["Vol7_Vocab.mp3", 587.15, 591.6], "19:25": ["Vol7_Vocab.mp3", 595.21, 596.75], "20:50": ["Vol7_Vocab.mp3", 600.74, 605.81], "20:51": ["Vol7_Vocab.mp3", 609.48, 613.97], "19:26": ["Vol7_Vocab.mp3", 617.99, 619.03], "20:52": ["Vol7_Vocab.mp3", 629.87, 634.43], "20:53": ["Vol7_Vocab.mp3", 639.35, 646.03], "19:27": ["Vol7_Vocab.mp3", 649.43, 650.45], "20:54": ["Vol7_Vocab.mp3", 654.44, 657.87], "20:55": ["Vol7_Vocab.mp3", 662.34, 667.82], "19:28": ["Vol7_Vocab.mp3", 672.25, 673.76], "20:56": ["Vol7_Vocab.mp3", 678.65, 682.37], "20:57": ["Vol7_Vocab.mp3", 685.96, 689.36], "19:29": ["Vol7_Vocab.mp3", 693.04, 694.58], "20:58": ["Vol7_Vocab.mp3", 698.56, 702.92], "20:59": ["Vol7_Vocab.mp3", 707.25, 713.33], "20:60": ["Vol7_Vocab.mp3", 716.89, 719.89], "19:30": ["Vol7_Vocab.mp3", 724.39, 725.82], "20:61": ["Vol7_Vocab.mp3", 729.52, 734.14], "20:62": ["Vol7_Vocab.mp3", 738.9, 742.33], "19:31": ["Vol7_Vocab.mp3", 746.56, 747.32], "20:63": ["Vol7_Vocab.mp3", 751.06, 755.44], "20:64": ["Vol7_Vocab.mp3", 759.09, 765.02], "19:32": ["Vol7_Vocab.mp3", 768.39, 770.02], "20:65": ["Vol7_Vocab.mp3", 773.33, 777.54], "20:66": ["Vol7_Vocab.mp3", 781.51, 788.28], "20:67": ["Vol7_Vocab.mp3", 796.5, 801.84], "20:68": ["Vol7_Vocab.mp3", 805.95, 808.5], "19:34": ["Vol7_Vocab.mp3", 812.6, 813.81], "20:69": ["Vol7_Vocab.mp3", 817.97, 822.73], "20:70": ["Vol7_Vocab.mp3", 826.91, 831.13], "19:35": ["Vol7_Vocab.mp3", 835.29, 836.7], "20:71": ["Vol7_Vocab.mp3", 841.07, 845.9], "20:72": ["Vol7_Vocab.mp3", 850.71, 854.74], "21:0:q": ["Vol7_QA.mp3", 11.47, 13.49], "21:0:a": ["Vol7_QA.mp3", 13.97, 23.04], "21:1:q": ["Vol7_QA.mp3", 23.09, 25.51], "21:1:a": ["Vol7_QA.mp3", 26.18, 32.51], "21:2:q": ["Vol7_QA.mp3", 32.56, 37.28], "21:2:a": ["Vol7_QA.mp3", 37.33, 43.24], "21:3:q": ["Vol7_QA.mp3", 43.29, 46.74], "21:3:a": ["Vol7_QA.mp3", 47.36, 53.06], "21:4:q": ["Vol7_QA.mp3", 54.17, 59.43], "21:4:a": ["Vol7_QA.mp3", 59.73, 63.5], "21:5:q": ["Vol7_QA.mp3", 63.68, 67.96], "21:5:a": ["Vol7_QA.mp3", 68.23, 74.1], "21:6:q": ["Vol7_QA.mp3", 74.15, 76.67], "21:6:a": ["Vol7_QA.mp3", 76.72, 85.06], "21:7:q": ["Vol7_QA.mp3", 85.12, 87.56], "21:7:a": ["Vol7_QA.mp3", 88.1, 95.36], "21:8:q": ["Vol7_QA.mp3", 95.8, 98.64], "21:8:a": ["Vol7_QA.mp3", 98.83, 110.78], "21:9:q": ["Vol7_QA.mp3", 110.83, 113.46], "21:9:a": ["Vol7_QA.mp3", 114.54, 120.85], "22:0": ["Vol8_Vocab.mp3", 7.32, 8.15], "23:0": ["Vol8_Vocab.mp3", 18.91, 22.62], "23:1": ["Vol8_Vocab.mp3", 27.74, 34.98], "22:1": ["Vol8_Vocab.mp3", 37.98, 38.84], "23:2": ["Vol8_Vocab.mp3", 41.96, 46.38], "23:3": ["Vol8_Vocab.mp3", 50.56, 53.93], "22:2": ["Vol8_Vocab.mp3", 57.45, 58.38], "23:4": ["Vol8_Vocab.mp3", 62.88, 67.5], "23:5": ["Vol8_Vocab.mp3", 71.76, 78.28], "22:3": ["Vol8_Vocab.mp3", 81.49, 82.81], "23:6": ["Vol8_Vocab.mp3", 85.94, 88.88], "23:7": ["Vol8_Vocab.mp3", 92.65, 97.98], "22:4": ["Vol8_Vocab.mp3", 101.31, 102.96], "23:8": ["Vol8_Vocab.mp3", 107.44, 110.53], "23:9": ["Vol8_Vocab.mp3", 115.17, 121.59], "22:5": ["Vol8_Vocab.mp3", 125.5, 126.66], "23:10": ["Vol8_Vocab.mp3", 131.45, 135.22], "23:11": ["Vol8_Vocab.mp3", 138.81, 143.17], "22:6": ["Vol8_Vocab.mp3", 146.57, 147.71], "23:12": ["Vol8_Vocab.mp3", 156.77, 162.33], "23:13": ["Vol8_Vocab.mp3", 166.7, 171.25], "22:7": ["Vol8_Vocab.mp3", 175.32, 176.02], "23:14": ["Vol8_Vocab.mp3", 179.97, 184.06], "23:15": ["Vol8_Vocab.mp3", 188.68, 195.4], "22:8": ["Vol8_Vocab.mp3", 198.9, 200.49], "23:16": ["Vol8_Vocab.mp3", 203.94, 209.54], "23:17": ["Vol8_Vocab.mp3", 212.7, 218.32], "22:9": ["Vol8_Vocab.mp3", 222.48, 223.93], "23:18": ["Vol8_Vocab.mp3", 227.64, 231.89], "23:19": ["Vol8_Vocab.mp3", 237.49, 244.51], "22:10": ["Vol8_Vocab.mp3", 248.37, 249.98], "23:20": ["Vol8_Vocab.mp3", 254.58, 259.11], "23:21": ["Vol8_Vocab.mp3", 264.88, 269.24], "22:11": ["Vol8_Vocab.mp3", 274.19, 275.29], "23:22": ["Vol8_Vocab.mp3", 280.25, 285.68], "23:23": ["Vol8_Vocab.mp3", 289.86, 294.62], "22:12": ["Vol8_Vocab.mp3", 299.52, 301.14], "23:24": ["Vol8_Vocab.mp3", 305.45, 309.22], "23:25": ["Vol8_Vocab.mp3", 313.86, 320.62], "22:13": ["Vol8_Vocab.mp3", 324.73, 325.51], "23:26": ["Vol8_Vocab.mp3", 329.16, 333.7], "23:27": ["Vol8_Vocab.mp3", 333.75, 344.57], "22:14": ["Vol8_Vocab.mp3", 348.57, 351.12], "23:28": ["Vol8_Vocab.mp3", 354.13, 359.65], "23:29": ["Vol8_Vocab.mp3", 364.29, 367.97], "22:15": ["Vol8_Vocab.mp3", 372.36, 373.9], "23:30": ["Vol8_Vocab.mp3", 377.59, 380.76], "23:31": ["Vol8_Vocab.mp3", 385.11, 388.59], "22:16": ["Vol8_Vocab.mp3", 392.11, 393.63], "23:32": ["Vol8_Vocab.mp3", 398.13, 402.06], "23:33": ["Vol8_Vocab.mp3", 406.45, 412.1], "22:17": ["Vol8_Vocab.mp3", 416.64, 417.93], "23:34": ["Vol8_Vocab.mp3", 423.41, 428.91], "23:35": ["Vol8_Vocab.mp3", 434.34, 440.41], "22:18": ["Vol8_Vocab.mp3", 444.84, 445.68], "23:36": ["Vol8_Vocab.mp3", 449.65, 454.17], "23:37": ["Vol8_Vocab.mp3", 459.5, 463.12], "24:0:q": ["Vol8_QA.mp3", 8.48, 11.19], "24:0:a": ["Vol8_QA.mp3", 12.94, 21.0], "24:1:q": ["Vol8_QA.mp3", 21.05, 25.28], "24:1:a": ["Vol8_QA.mp3", 26.55, 31.85], "24:2:q": ["Vol8_QA.mp3", 31.9, 38.45], "24:2:a": ["Vol8_QA.mp3", 38.5, 48.43], "24:3:q": ["Vol8_QA.mp3", 48.48, 53.63], "24:3:a": ["Vol8_QA.mp3", 54.8, 63.11], "24:4:q": ["Vol8_QA.mp3", 63.16, 68.3], "24:4:a": ["Vol8_QA.mp3", 68.54, 78.86], "24:5:q": ["Vol8_QA.mp3", 79.52, 82.56], "24:5:a": ["Vol8_QA.mp3", 84.19, 93.57], "24:6:q": ["Vol8_QA.mp3", 93.9, 98.07], "24:6:a": ["Vol8_QA.mp3", 99.78, 112.33], "24:7:q": ["Vol8_QA.mp3", 114.29, 118.61], "24:7:a": ["Vol8_QA.mp3", 118.66, 127.4], "24:8:q": ["Vol8_QA.mp3", 128.81, 132.55], "24:8:a": ["Vol8_QA.mp3", 133.9, 147.29], "24:9:q": ["Vol8_QA.mp3", 147.34, 151.57], "24:9:a": ["Vol8_QA.mp3", 152.18, 157.59], "25:0": ["Vol9_Vocab.mp3", 10.93, 12.44], "26:0": ["Vol9_Vocab.mp3", 18.48, 22.4], "26:1": ["Vol9_Vocab.mp3", 26.39, 31.47], "25:1": ["Vol9_Vocab.mp3", 34.49, 35.87], "26:2": ["Vol9_Vocab.mp3", 39.29, 45.09], "26:3": ["Vol9_Vocab.mp3", 48.6, 53.58], "25:2": ["Vol9_Vocab.mp3", 56.51, 57.85], "26:4": ["Vol9_Vocab.mp3", 64.0, 67.52], "26:5": ["Vol9_Vocab.mp3", 70.83, 73.91], "25:3": ["Vol9_Vocab.mp3", 77.04, 78.35], "26:6": ["Vol9_Vocab.mp3", 81.43, 84.9], "26:7": ["Vol9_Vocab.mp3", 88.06, 93.97], "26:8": ["Vol9_Vocab.mp3", 101.56, 104.5], "26:9": ["Vol9_Vocab.mp3", 107.45, 112.51], "25:5": ["Vol9_Vocab.mp3", 115.57, 117.37], "26:10": ["Vol9_Vocab.mp3", 120.73, 124.23], "26:11": ["Vol9_Vocab.mp3", 128.25, 131.87], "25:6": ["Vol9_Vocab.mp3", 135.29, 136.13], "26:12": ["Vol9_Vocab.mp3", 140.71, 146.17], "26:13": ["Vol9_Vocab.mp3", 149.92, 155.31], "25:7": ["Vol9_Vocab.mp3", 158.27, 159.65], "26:14": ["Vol9_Vocab.mp3", 163.45, 167.44], "26:15": ["Vol9_Vocab.mp3", 171.45, 176.31], "25:8": ["Vol9_Vocab.mp3", 179.58, 180.71], "26:16": ["Vol9_Vocab.mp3", 185.1, 190.42], "26:17": ["Vol9_Vocab.mp3", 193.66, 198.57], "25:9": ["Vol9_Vocab.mp3", 200.78, 201.69], "26:18": ["Vol9_Vocab.mp3", 206.34, 209.3], "26:19": ["Vol9_Vocab.mp3", 212.97, 216.78], "25:10": ["Vol9_Vocab.mp3", 219.89, 220.85], "26:20": ["Vol9_Vocab.mp3", 225.3, 230.62], "26:21": ["Vol9_Vocab.mp3", 234.47, 237.53], "25:11": ["Vol9_Vocab.mp3", 241.63, 242.69], "26:22": ["Vol9_Vocab.mp3", 247.32, 254.47], "26:23": ["Vol9_Vocab.mp3", 258.06, 264.57], "25:12": ["Vol9_Vocab.mp3", 268.35, 269.59], "26:24": ["Vol9_Vocab.mp3", 273.17, 278.62], "26:25": ["Vol9_Vocab.mp3", 282.95, 288.89], "26:26": ["Vol9_Vocab.mp3", 296.64, 302.48], "26:27": ["Vol9_Vocab.mp3", 306.39, 310.43], "25:14": ["Vol9_Vocab.mp3", 313.91, 315.02], "26:28": ["Vol9_Vocab.mp3", 318.98, 323.74], "26:29": ["Vol9_Vocab.mp3", 327.33, 329.9], "27:0:q": ["Vol9_QA.mp3", 7.92, 15.21], "27:0:a": ["Vol9_QA.mp3", 15.26, 20.15], "27:1:q": ["Vol9_QA.mp3", 20.2, 23.8], "27:1:a": ["Vol9_QA.mp3", 24.72, 39.99], "27:2:q": ["Vol9_QA.mp3", 40.04, 44.03], "27:2:a": ["Vol9_QA.mp3", 44.08, 53.29], "27:3:q": ["Vol9_QA.mp3", 53.34, 57.8], "27:3:a": ["Vol9_QA.mp3", 58.67, 73.36], "27:4:q": ["Vol9_QA.mp3", 73.62, 77.52], "27:4:a": ["Vol9_QA.mp3", 77.86, 93.57], "27:5:q": ["Vol9_QA.mp3", 93.62, 97.78], "27:5:a": ["Vol9_QA.mp3", 99.02, 106.68], "27:6:q": ["Vol9_QA.mp3", 106.73, 111.02], "27:6:a": ["Vol9_QA.mp3", 112.03, 117.95], "27:7:q": ["Vol9_QA.mp3", 118.0, 123.16], "27:7:a": ["Vol9_QA.mp3", 124.24, 129.69], "27:8:q": ["Vol9_QA.mp3", 130.76, 135.87], "27:8:a": ["Vol9_QA.mp3", 135.92, 143.64], "27:9:q": ["Vol9_QA.mp3", 143.69, 148.55], "27:9:a": ["Vol9_QA.mp3", 150.21, 157.94], "28:0": ["Vol10_Vocab.mp3", 17.6, 18.5], "29:0": ["Vol10_Vocab.mp3", 21.7, 25.68], "29:1": ["Vol10_Vocab.mp3", 30.36, 34.43], "28:1": ["Vol10_Vocab.mp3", 38.36, 39.35], "29:2": ["Vol10_Vocab.mp3", 43.67, 47.71], "29:3": ["Vol10_Vocab.mp3", 51.76, 60.13], "28:2": ["Vol10_Vocab.mp3", 63.43, 64.98], "29:4": ["Vol10_Vocab.mp3", 68.69, 73.03], "29:5": ["Vol10_Vocab.mp3", 76.75, 82.82], "28:3": ["Vol10_Vocab.mp3", 85.92, 87.46], "29:6": ["Vol10_Vocab.mp3", 91.03, 95.3], "29:7": ["Vol10_Vocab.mp3", 99.83, 104.58], "28:4": ["Vol10_Vocab.mp3", 108.27, 110.12], "29:8": ["Vol10_Vocab.mp3", 113.69, 118.28], "29:9": ["Vol10_Vocab.mp3", 122.79, 128.43], "28:5": ["Vol10_Vocab.mp3", 132.59, 133.93], "29:10": ["Vol10_Vocab.mp3", 137.24, 143.58], "29:11": ["Vol10_Vocab.mp3", 148.95, 153.92], "28:6": ["Vol10_Vocab.mp3", 157.29, 158.0], "29:12": ["Vol10_Vocab.mp3", 162.05, 165.65], "29:13": ["Vol10_Vocab.mp3", 169.63, 173.58], "28:7": ["Vol10_Vocab.mp3", 177.11, 178.13], "29:14": ["Vol10_Vocab.mp3", 182.74, 186.89], "29:15": ["Vol10_Vocab.mp3", 191.14, 195.51], "28:8": ["Vol10_Vocab.mp3", 199.66, 201.25], "29:16": ["Vol10_Vocab.mp3", 205.5, 209.26], "29:17": ["Vol10_Vocab.mp3", 213.63, 218.18], "28:9": ["Vol10_Vocab.mp3", 221.86, 223.68], "29:18": ["Vol10_Vocab.mp3", 227.51, 232.0], "29:19": ["Vol10_Vocab.mp3", 236.56, 240.73], "28:10": ["Vol10_Vocab.mp3", 244.08, 245.49], "29:20": ["Vol10_Vocab.mp3", 249.91, 253.84], "29:21": ["Vol10_Vocab.mp3", 258.38, 264.38], "28:11": ["Vol10_Vocab.mp3", 267.03, 268.06], "29:22": ["Vol10_Vocab.mp3", 273.91, 278.87], "29:23": ["Vol10_Vocab.mp3", 282.88, 287.16], "28:12": ["Vol10_Vocab.mp3", 290.81, 291.84], "29:24": ["Vol10_Vocab.mp3", 296.28, 300.62], "29:25": ["Vol10_Vocab.mp3", 304.73, 309.39], "28:13": ["Vol10_Vocab.mp3", 313.04, 314.67], "29:26": ["Vol10_Vocab.mp3", 320.88, 325.55], "29:27": ["Vol10_Vocab.mp3", 329.35, 334.74], "28:14": ["Vol10_Vocab.mp3", 337.78, 339.11], "29:28": ["Vol10_Vocab.mp3", 343.11, 348.53], "29:29": ["Vol10_Vocab.mp3", 352.42, 357.44], "28:15": ["Vol10_Vocab.mp3", 361.33, 362.24], "29:30": ["Vol10_Vocab.mp3", 366.08, 370.87], "29:31": ["Vol10_Vocab.mp3", 375.62, 380.32], "28:16": ["Vol10_Vocab.mp3", 384.18, 385.52], "29:32": ["Vol10_Vocab.mp3", 389.15, 393.49], "29:33": ["Vol10_Vocab.mp3", 397.15, 401.08], "28:17": ["Vol10_Vocab.mp3", 404.31, 405.62], "29:34": ["Vol10_Vocab.mp3", 409.26, 412.87], "29:35": ["Vol10_Vocab.mp3", 417.5, 421.49], "28:18": ["Vol10_Vocab.mp3", 424.79, 425.78], "29:36": ["Vol10_Vocab.mp3", 429.68, 433.39], "29:37": ["Vol10_Vocab.mp3", 437.38, 440.99], "30:0:q": ["Vol10_QA.mp3", 8.99, 13.13], "30:0:a": ["Vol10_QA.mp3", 13.67, 24.0], "30:1:q": ["Vol10_QA.mp3", 24.96, 28.54], "30:1:a": ["Vol10_QA.mp3", 29.86, 36.51], "30:2:q": ["Vol10_QA.mp3", 36.56, 41.27], "30:2:a": ["Vol10_QA.mp3", 41.32, 50.2], "30:3:q": ["Vol10_QA.mp3", 50.25, 54.16], "30:3:a": ["Vol10_QA.mp3", 55.13, 66.91], "30:4:q": ["Vol10_QA.mp3", 66.96, 71.0], "30:4:a": ["Vol10_QA.mp3", 72.27, 80.73], "30:5:q": ["Vol10_QA.mp3", 81.83, 85.45], "30:5:a": ["Vol10_QA.mp3", 86.52, 93.59], "30:6:q": ["Vol10_QA.mp3", 94.09, 98.7], "30:6:a": ["Vol10_QA.mp3", 98.75, 111.12], "30:7:q": ["Vol10_QA.mp3", 111.17, 116.39], "30:7:a": ["Vol10_QA.mp3", 116.76, 124.48], "30:8:q": ["Vol10_QA.mp3", 124.53, 128.19], "30:8:a": ["Vol10_QA.mp3", 128.79, 139.51], "30:9:q": ["Vol10_QA.mp3", 140.3, 144.03], "30:9:a": ["Vol10_QA.mp3", 144.08, 148.46], "16:2": ["Vol6_Vocab.mp3", 60.17, 61.25], "19:33": ["Vol7_Vocab.mp3", 801.07, 801.73], "25:4": ["Vol9_Vocab.mp3", 101.78, 102.44], "25:13": ["Vol9_Vocab.mp3", 299.14, 299.66]});
 window.QUIZ_AUDIO_B64 = {}; // audio removed to keep file small enough for GitHub Pages / mobile upload
 </script>
 
@@ -1483,6 +1559,933 @@ const VOCAB_SETS = [
       {en:"I think short hair suits me better.",jp:"私は短い髪の方が似合うと思います。",vocab:"似合う",furigana:"<ruby>私<rt>わたし</rt></ruby>は<ruby>短<rt>みじか</rt></ruby>い<ruby>髪<rt>かみ</rt></ruby>の<ruby>方<rt>ほう</rt></ruby>が<ruby>似合<rt>にあ</rt></ruby>うと<ruby>思<rt>おも</rt></ruby>います。"},
     ]
   },
+  {
+    id: 15,
+    label: "Vol 5",
+    qaSet: true,
+    words: [
+      {
+        q:"あなたは今、何を着ていますか。",
+        qf:"あなたは<ruby>今<rt>いま</rt></ruby>、<ruby>何<rt>なに</rt></ruby>を<ruby>着<rt>き</rt></ruby>ていますか。",
+        qen:"What are you wearing right now?",
+        a:"私はTシャツを着て、ジーンズをはいて、帽子をかぶっています。",
+        af:"<ruby>私<rt>わたし</rt></ruby>はTシャツを<ruby>着<rt>き</rt></ruby>て、ジーンズをはいて、<ruby>帽子<rt>ぼうし</rt></ruby>をかぶっています。",
+        aen:"I'm wearing a T-shirt, jeans, and a hat."
+      },
+      {
+        q:"あなたの家の中でくつをはいてもいいですか。",
+        qf:"あなたの<ruby>家<rt>いえ</rt></ruby>の<ruby>中<rt>なか</rt></ruby>でくつをはいてもいいですか。",
+        qen:"May you wear shoes inside your house?",
+        a:"いいえ。私の家の中で靴をはいてはいけません。",
+        af:"いいえ。<ruby>私<rt>わたし</rt></ruby>の<ruby>家<rt>いえ</rt></ruby>の<ruby>中<rt>なか</rt></ruby>で<ruby>靴<rt>くつ</rt></ruby>をはいてはいけません。",
+        aen:"No, you must not wear shoes inside my house."
+      },
+      {
+        q:"よくサングラスをかけますか。",
+        qf:"よくサングラスをかけますか。",
+        qen:"Do you often wear sunglasses?",
+        a:"はい。ときどき晴れの日にサングラスをかけます。",
+        af:"はい。ときどき<ruby>晴<rt>は</rt></ruby>れの<ruby>日<rt>ひ</rt></ruby>にサングラスをかけます。",
+        aen:"Yes, I sometimes wear sunglasses on sunny days."
+      },
+      {
+        q:"学生の時、どこで服を買っていましたか。",
+        qf:"<ruby>学生<rt>がくせい</rt></ruby>の<ruby>時<rt>とき</rt></ruby>、どこで<ruby>服<rt>ふく</rt></ruby>を<ruby>買<rt>か</rt></ruby>っていましたか。",
+        qen:"Where did you buy clothes when you were a student?",
+        a:"学生の時、よく古着屋で服を買っていました。",
+        af:"<ruby>学生<rt>がくせい</rt></ruby>の<ruby>時<rt>とき</rt></ruby>、よく<ruby>古着屋<rt>ふるぎや</rt></ruby>で<ruby>服<rt>ふく</rt></ruby>を<ruby>買<rt>か</rt></ruby>っていました。",
+        aen:"When I was a student, I often bought clothes at thrift shops."
+      },
+      {
+        q:"お父さんは今どんなふくを着ていますか。",
+        qf:"お<ruby>父<rt>とう</rt></ruby>さんは<ruby>今<rt>いま</rt></ruby>どんなふくを<ruby>着<rt>き</rt></ruby>ていますか。",
+        qen:"What kind of clothes is your father wearing now?",
+        a:"父は今、ジーンズをはいて、めがねをかけています。でもTシャツを着ていません。",
+        af:"<ruby>父<rt>ちち</rt></ruby>は<ruby>今<rt>いま</rt></ruby>、ジーンズをはいて、めがねをかけています。でもTシャツを<ruby>着<rt>き</rt></ruby>ていません。",
+        aen:"My father is wearing jeans and glasses now, but he isn't wearing a T-shirt."
+      },
+      {
+        q:"どんな色の服をたくさん持っていますか。",
+        qf:"どんな<ruby>色<rt>いろ</rt></ruby>の<ruby>服<rt>ふく</rt></ruby>をたくさん<ruby>持<rt>も</rt></ruby>っていますか。",
+        qen:"What color clothes do you have a lot of?",
+        a:"私は緑色が好きだけど、黒色の服を一番たくさん持っています。",
+        af:"<ruby>私<rt>わたし</rt></ruby>は<ruby>緑色<rt>みどりいろ</rt></ruby>が<ruby>好<rt>す</rt></ruby>きだけど、<ruby>黒色<rt>くろいろ</rt></ruby>の<ruby>服<rt>ふく</rt></ruby>を<ruby>一番<rt>いちばん</rt></ruby>たくさん<ruby>持<rt>も</rt></ruby>っています。",
+        aen:"I like green, but I have the most black clothes."
+      },
+      {
+        q:"家の中でも帽子をかぶりますか。",
+        qf:"<ruby>家<rt>いえ</rt></ruby>の<ruby>中<rt>なか</rt></ruby>でも<ruby>帽子<rt>ぼうし</rt></ruby>をかぶりますか。",
+        qen:"Do you wear a hat even inside the house?",
+        a:"私はときどき、寒い時、家の中でニット帽をかぶります。",
+        af:"<ruby>私<rt>わたし</rt></ruby>はときどき、<ruby>寒<rt>さむ</rt></ruby>い<ruby>時<rt>とき</rt></ruby>、<ruby>家<rt>いえ</rt></ruby>の<ruby>中<rt>なか</rt></ruby>でニット<ruby>帽<rt>ぼう</rt></ruby>をかぶります。",
+        aen:"Sometimes, when it's cold, I wear a beanie inside the house."
+      },
+      {
+        q:"どんな服を着ている人がかっこいいと思いますか。",
+        qf:"どんな<ruby>服<rt>ふく</rt></ruby>を<ruby>着<rt>き</rt></ruby>ている<ruby>人<rt>ひと</rt></ruby>がかっこいいと<ruby>思<rt>おも</rt></ruby>いますか。",
+        qen:"What kind of people do you think look cool based on their clothes?",
+        a:"私は自分が好きな服を着ている人がかっこいいと思います。",
+        af:"<ruby>私<rt>わたし</rt></ruby>は<ruby>自分<rt>じぶん</rt></ruby>が<ruby>好<rt>す</rt></ruby>きな<ruby>服<rt>ふく</rt></ruby>を<ruby>着<rt>き</rt></ruby>ている<ruby>人<rt>ひと</rt></ruby>がかっこいいと<ruby>思<rt>おも</rt></ruby>います。",
+        aen:"I think people who wear clothes they like look cool."
+      },
+      {
+        q:"赤色と青色とどっちのシャツのほうが着てみたいですか。",
+        qf:"<ruby>赤色<rt>あかいろ</rt></ruby>と<ruby>青色<rt>あおいろ</rt></ruby>とどっちのシャツのほうが<ruby>着<rt>き</rt></ruby>てみたいですか。",
+        qen:"Which shirt would you like to try wearing more, red or blue?",
+        a:"私は青色のシャツのほうが着てみたいです。",
+        af:"<ruby>私<rt>わたし</rt></ruby>は<ruby>青色<rt>あおいろ</rt></ruby>のシャツのほうが<ruby>着<rt>き</rt></ruby>てみたいです。",
+        aen:"I'd like to try wearing the blue shirt."
+      },
+      {
+        q:"アクセサリーをつけますか。",
+        qf:"アクセサリーをつけますか。",
+        qen:"Do you wear accessories?",
+        a:"ときどきネックレスや時計をつけます。でも今は何もつけていません。",
+        af:"ときどきネックレスや<ruby>時計<rt>とけい</rt></ruby>をつけます。でも<ruby>今<rt>いま</rt></ruby>は<ruby>何<rt>なに</rt></ruby>もつけていません。",
+        aen:"Sometimes I wear a necklace or a watch, but right now I'm not wearing anything."
+      },
+    ]
+  },
+  {
+    id: 16,
+    label: "Vol 6",
+    words: [
+      {en:"To rain",jp:"雨が降る",kana:"あめがふる"},
+      {en:"Future",jp:"将来",kana:"しょうらい"},
+      {en:"In〜",jp:"〜後",kana:"ご"},
+      {en:"Plan",jp:"予定",kana:"よてい"},
+      {en:"To think through",jp:"考える",kana:"かんがえる"},
+      {en:"In 2 years",jp:"再来年",kana:"さらいねん"},
+      {en:"Once",jp:"一度",kana:"いちど"},
+      {en:"Amazing",jp:"最高",kana:"さいこう"},
+      {en:"To give it a try",jp:"試す",kana:"ためす"},
+      {en:"Half",jp:"半分",kana:"はんぶん"},
+      {en:"To save money",jp:"貯金する",kana:"ちょきんする"},
+      {en:"To age",jp:"年をとる",kana:"としをとる"},
+      {en:"Muscle",jp:"筋肉",kana:"きんにく"},
+      {en:"Weight training",jp:"筋トレ",kana:"きんトレ"},
+      {en:"To retire",jp:"退職する",kana:"たいしょくする"},
+      {en:"Poor",jp:"貧しい",kana:"まずしい"},
+      {en:"Area",jp:"地域",kana:"ちいき"},
+      {en:"Wonderful",jp:"素晴らしい",kana:"すばらしい"},
+      {en:"Ideal",jp:"理想",kana:"りそう"},
+      {en:"To laugh / To smile",jp:"笑う",kana:"わらう"},
+      {en:"To imagine",jp:"想像する",kana:"そうぞうする"},
+      {en:"Loud",jp:"うるさい",kana:""},
+      {en:"To live life",jp:"生きる",kana:"いきる"},
+      {en:"To worry",jp:"心配する",kana:"しんぱいする"},
+    ]
+  },
+  {
+    id: 17,
+    label: "Vol 6",
+    sentenceSet: true,
+    words: [
+      {en:"It might rain tomorrow.",jp:"明日は雨が降るかもしれません。",vocab:"雨が降る",furigana:"<ruby>明日<rt>あした</rt></ruby>は<ruby>雨<rt>あめ</rt></ruby>が<ruby>降<rt>ふ</rt></ruby>るかもしれません。"},
+      {en:"My friend said it will not rain tonight.",jp:"友達は今晩雨が降らないと言っていました。",vocab:"雨が降る",furigana:"<ruby>友達<rt>ともだち</rt></ruby>は<ruby>今晩<rt>こんばん</rt></ruby><ruby>雨<rt>あめ</rt></ruby>が<ruby>降<rt>ふ</rt></ruby>らないと<ruby>言<rt>い</rt></ruby>っていました。"},
+      {en:"What do you want to become in the future?",jp:"将来、何になりたいですか。",vocab:"将来",furigana:"<ruby>将来<rt>しょうらい</rt></ruby>、<ruby>何<rt>なに</rt></ruby>になりたいですか。"},
+      {en:"I want to live in Japan in the future.",jp:"将来日本に住みたいです。",vocab:"将来",furigana:"<ruby>将来<rt>しょうらい</rt></ruby><ruby>日本<rt>にほん</rt></ruby>に<ruby>住<rt>す</rt></ruby>みたいです。"},
+      {en:"Because I'm planning to go to Japan in 3 years, I'm studying Japanese now.",jp:"3年後、日本に行くつもりなので、今、日本語を勉強しています。",vocab:"〜後",furigana:"<ruby>3年後<rt>さんねんご</rt></ruby>、<ruby>日本<rt>にほん</rt></ruby>に<ruby>行<rt>い</rt></ruby>くつもりなので、<ruby>今<rt>いま</rt></ruby>、<ruby>日本語<rt>にほんご</rt></ruby>を<ruby>勉強<rt>べんきょう</rt></ruby>しています。"},
+      {en:"In 2 weeks, I will go to a big party with my friend.",jp:"2週間後、友達と大きいパーティーに行きます。",vocab:"〜後",furigana:"<ruby>2週間後<rt>にしゅうかんご</rt></ruby>、<ruby>友達<rt>ともだち</rt></ruby>と<ruby>大<rt>おお</rt></ruby>きいパーティーに<ruby>行<rt>い</rt></ruby>きます。"},
+      {en:"Do you have plans tomorrow?",jp:"明日、予定がありますか。",vocab:"予定",furigana:"<ruby>明日<rt>あした</rt></ruby>、<ruby>予定<rt>よてい</rt></ruby>がありますか。"},
+      {en:"Since I don't have any plans today, I plan to relax at home.",jp:"今日は予定がないので、家でのんびりするつもりです。",vocab:"予定",furigana:"<ruby>今日<rt>きょう</rt></ruby>は<ruby>予定<rt>よてい</rt></ruby>がないので、<ruby>家<rt>いえ</rt></ruby>でのんびりするつもりです。"},
+      {en:"I have to think about my future.",jp:"将来のことを考えなきゃいけません。",vocab:"考える",furigana:"<ruby>将来<rt>しょうらい</rt></ruby>のことを<ruby>考<rt>かんが</rt></ruby>えなきゃいけません。"},
+      {en:"Please don't think too much.",jp:"考えすぎないでください。",vocab:"考える",furigana:"<ruby>考<rt>かんが</rt></ruby>えすぎないでください。"},
+      {en:"In two years, I will go to Japan to study Japanese.",jp:"再来年、日本に日本語を勉強しに行きます。",vocab:"再来年",furigana:"<ruby>再来年<rt>さらいねん</rt></ruby>、<ruby>日本<rt>にほん</rt></ruby>に<ruby>日本語<rt>にほんご</rt></ruby>を<ruby>勉強<rt>べんきょう</rt></ruby>しに<ruby>行<rt>い</rt></ruby>きます。"},
+      {en:"I still don't know my plans for two years from now.",jp:"まだ再来年の予定は分かりません。",vocab:"再来年",furigana:"まだ<ruby>再来年<rt>さらいねん</rt></ruby>の<ruby>予定<rt>よてい</rt></ruby>は<ruby>分<rt>わ</rt></ruby>かりません。"},
+      {en:"I once learned karate in Japan.",jp:"一度日本で、空手を習ったことがあります。",vocab:"一度",furigana:"<ruby>一度<rt>いちど</rt></ruby><ruby>日本<rt>にほん</rt></ruby>で、<ruby>空手<rt>からて</rt></ruby>を<ruby>習<rt>なら</rt></ruby>ったことがあります。"},
+      {en:"Please think about it one more time.",jp:"もう一度、考えてください。",vocab:"一度",furigana:"もう<ruby>一度<rt>いちど</rt></ruby>、<ruby>考<rt>かんが</rt></ruby>えてください。"},
+      {en:"This movie was amazing.",jp:"この映画は最高でした。",vocab:"最高",furigana:"この<ruby>映画<rt>えいが</rt></ruby>は<ruby>最高<rt>さいこう</rt></ruby>でした。"},
+      {en:"Since yesterday, I was able to go to a restaurant with my family, it was the best day.",jp:"昨日家族と一緒にレストランに行くことができたので、最高の1日でした。",vocab:"最高",furigana:"<ruby>昨日<rt>きのう</rt></ruby><ruby>家族<rt>かぞく</rt></ruby>と<ruby>一緒<rt>いっしょ</rt></ruby>にレストランに<ruby>行<rt>い</rt></ruby>くことができたので、<ruby>最高<rt>さいこう</rt></ruby>の<ruby>1日<rt>いちにち</rt></ruby>でした。"},
+      {en:"Please try this app once.",jp:"一度このアプリを試してみてください。",vocab:"試す",furigana:"<ruby>一度<rt>いちど</rt></ruby>このアプリを<ruby>試<rt>ため</rt></ruby>してみてください。"},
+      {en:"I think trying new food is interesting.",jp:"新しい食べ物を試すのはおもしろいと思います。",vocab:"試す",furigana:"<ruby>新<rt>あたら</rt></ruby>しい<ruby>食<rt>た</rt></ruby>べ<ruby>物<rt>もの</rt></ruby>を<ruby>試<rt>ため</rt></ruby>すのはおもしろいと<ruby>思<rt>おも</rt></ruby>います。"},
+      {en:"Yesterday, I finished half of my work.",jp:"昨日、仕事の半分が終わりました。",vocab:"半分",furigana:"<ruby>昨日<rt>きのう</rt></ruby>、<ruby>仕事<rt>しごと</rt></ruby>の<ruby>半分<rt>はんぶん</rt></ruby>が<ruby>終<rt>お</rt></ruby>わりました。"},
+      {en:"This half is yours, and half is mine.",jp:"この半分はあなたので、半分は私のです。",vocab:"半分",furigana:"この<ruby>半分<rt>はんぶん</rt></ruby>はあなたので、<ruby>半分<rt>はんぶん</rt></ruby>は<ruby>私<rt>わたし</rt></ruby>のです。"},
+      {en:"I have to save money until I go to Japan in two years.",jp:"再来年、日本に行くまで貯金しなきゃいけません。",vocab:"貯金する",furigana:"<ruby>再来年<rt>さらいねん</rt></ruby>、<ruby>日本<rt>にほん</rt></ruby>に<ruby>行<rt>い</rt></ruby>くまで<ruby>貯金<rt>ちょきん</rt></ruby>しなきゃいけません。"},
+      {en:"I think saving a little money every month is important.",jp:"毎月、少しずつ貯金をするのは大切だと思います。",vocab:"貯金する",furigana:"<ruby>毎月<rt>まいつき</rt></ruby>、<ruby>少<rt>すこ</rt></ruby>しずつ<ruby>貯金<rt>ちょきん</rt></ruby>をするのは<ruby>大切<rt>たいせつ</rt></ruby>だと<ruby>思<rt>おも</rt></ruby>います。"},
+      {en:"I don't want to get older.",jp:"年をとりたくないです。",vocab:"年をとる",furigana:"<ruby>年<rt>とし</rt></ruby>をとりたくないです。"},
+      {en:"I've gotten older, but now life is the most fun.",jp:"年をとりましたが、今は最高に楽しいです。",vocab:"年をとる",furigana:"<ruby>年<rt>とし</rt></ruby>をとりましたが、<ruby>今<rt>いま</rt></ruby>は<ruby>最高<rt>さいこう</rt></ruby>に<ruby>楽<rt>たの</rt></ruby>しいです。"},
+      {en:"Building muscle is important.",jp:"筋肉をつけるのは大切です。",vocab:"筋肉",furigana:"<ruby>筋肉<rt>きんにく</rt></ruby>をつけるのは<ruby>大切<rt>たいせつ</rt></ruby>です。"},
+      {en:"People with big muscles look strong.",jp:"筋肉が大きい人は強そうです。",vocab:"筋肉",furigana:"<ruby>筋肉<rt>きんにく</rt></ruby>が<ruby>大<rt>おお</rt></ruby>きい<ruby>人<rt>ひと</rt></ruby>は<ruby>強<rt>つよ</rt></ruby>そうです。"},
+      {en:"Starting next year, I plan to do weight training every day.",jp:"来年から、毎日筋トレをするつもりです。",vocab:"筋トレ",furigana:"<ruby>来年<rt>らいねん</rt></ruby>から、<ruby>毎日<rt>まいにち</rt></ruby><ruby>筋<rt>きん</rt></ruby>トレをするつもりです。"},
+      {en:"Every morning, I do weight training and go running.",jp:"毎朝、筋トレをしたり、走ったりします。",vocab:"筋トレ",furigana:"<ruby>毎朝<rt>まいあさ</rt></ruby>、<ruby>筋<rt>きん</rt></ruby>トレをしたり、<ruby>走<rt>はし</rt></ruby>ったりします。"},
+      {en:"In 5 years, I might be retired.",jp:"5年後、退職しているかもしれません。",vocab:"退職する",furigana:"<ruby>5年後<rt>ごねんご</rt></ruby>、<ruby>退職<rt>たいしょく</rt></ruby>しているかもしれません。"},
+      {en:"Please don't retire yet.",jp:"まだ退職しないでください。",vocab:"退職する",furigana:"まだ<ruby>退職<rt>たいしょく</rt></ruby>しないでください。"},
+      {en:"In the past, my life was poor.",jp:"昔、生活が貧しかったです。",vocab:"貧しい",furigana:"<ruby>昔<rt>むかし</rt></ruby>、<ruby>生活<rt>せいかつ</rt></ruby>が<ruby>貧<rt>まず</rt></ruby>しかったです。"},
+      {en:"In the future, I want to help poor people.",jp:"将来、貧しい人を助けたいです。",vocab:"貧しい",furigana:"<ruby>将来<rt>しょうらい</rt></ruby>、<ruby>貧<rt>まず</rt></ruby>しい<ruby>人<rt>ひと</rt></ruby>を<ruby>助<rt>たす</rt></ruby>けたいです。"},
+      {en:"Next year, I plan to live in a quiet and clean area.",jp:"来年は静かできれいな地域に住むつもりです。",vocab:"地域",furigana:"<ruby>来年<rt>らいねん</rt></ruby>は<ruby>静<rt>しず</rt></ruby>かできれいな<ruby>地域<rt>ちいき</rt></ruby>に<ruby>住<rt>す</rt></ruby>むつもりです。"},
+      {en:"It's fun to talk with people who live in this area.",jp:"この地域に住んでいる人と話すのは楽しいです。",vocab:"地域",furigana:"この<ruby>地域<rt>ちいき</rt></ruby>に<ruby>住<rt>す</rt></ruby>んでいる<ruby>人<rt>ひと</rt></ruby>と<ruby>話<rt>はな</rt></ruby>すのは<ruby>楽<rt>たの</rt></ruby>しいです。"},
+      {en:"I was able to have a wonderful experience.",jp:"素晴らしい経験をすることができました。",vocab:"素晴らしい",furigana:"<ruby>素晴<rt>すば</rt></ruby>らしい<ruby>経験<rt>けいけん</rt></ruby>をすることができました。"},
+      {en:"I think tomorrow will be a wonderful day too.",jp:"明日も素晴らしい1日になると思います。",vocab:"素晴らしい",furigana:"<ruby>明日<rt>あした</rt></ruby>も<ruby>素晴<rt>すば</rt></ruby>らしい<ruby>1日<rt>いちにち</rt></ruby>になると<ruby>思<rt>おも</rt></ruby>います。"},
+      {en:"My ideal apartment is spacious and in the city.",jp:"理想のアパートは広くて、街の中にあるアパートです。",vocab:"理想",furigana:"<ruby>理想<rt>りそう</rt></ruby>のアパートは<ruby>広<rt>ひろ</rt></ruby>くて、<ruby>街<rt>まち</rt></ruby>の<ruby>中<rt>なか</rt></ruby>にあるアパートです。"},
+      {en:"I think your standards are too high.",jp:"理想が高すぎると思います。",vocab:"理想",furigana:"<ruby>理想<rt>りそう</rt></ruby>が<ruby>高<rt>たか</rt></ruby>すぎると<ruby>思<rt>おも</rt></ruby>います。"},
+      {en:"Yesterday, I met an old friend and laughed a lot.",jp:"昨日は昔の友達に会って、たくさん笑いました。",vocab:"笑う",furigana:"<ruby>昨日<rt>きのう</rt></ruby>は<ruby>昔<rt>むかし</rt></ruby>の<ruby>友達<rt>ともだち</rt></ruby>に<ruby>会<rt>あ</rt></ruby>って、たくさん<ruby>笑<rt>わら</rt></ruby>いました。"},
+      {en:"I love people who laugh a lot.",jp:"私はたくさん笑う人が大好きです。",vocab:"笑う",furigana:"<ruby>私<rt>わたし</rt></ruby>はたくさん<ruby>笑<rt>わら</rt></ruby>う<ruby>人<rt>ひと</rt></ruby>が<ruby>大好<rt>だいす</rt></ruby>きです。"},
+      {en:"Please try to imagine a fun and happy life.",jp:"楽しくて幸せな人生を想像してみてください。",vocab:"想像する",furigana:"<ruby>楽<rt>たの</rt></ruby>しくて<ruby>幸<rt>しあわ</rt></ruby>せな<ruby>人生<rt>じんせい</rt></ruby>を<ruby>想像<rt>そうぞう</rt></ruby>してみてください。"},
+      {en:"Five years ago, I couldn't imagine my life now.",jp:"5年前は今の生活を想像することができませんでした。",vocab:"想像する",furigana:"<ruby>5年前<rt>ごねんまえ</rt></ruby>は<ruby>今<rt>いま</rt></ruby>の<ruby>生活<rt>せいかつ</rt></ruby>を<ruby>想像<rt>そうぞう</rt></ruby>することができませんでした。"},
+      {en:"This area is noisy and not very convenient.",jp:"この地域はうるさくて、あまり便利じゃないです。",vocab:"うるさい",furigana:"この<ruby>地域<rt>ちいき</rt></ruby>はうるさくて、あまり<ruby>便利<rt>べんり</rt></ruby>じゃないです。"},
+      {en:"Last night, my grandfather was really noisy.",jp:"昨日、祖父は夜、本当にうるさかったです。",vocab:"うるさい",furigana:"<ruby>昨日<rt>きのう</rt></ruby>、<ruby>祖父<rt>そふ</rt></ruby>は<ruby>夜<rt>よる</rt></ruby>、<ruby>本当<rt>ほんとう</rt></ruby>にうるさかったです。"},
+      {en:"Let's live happily every day.",jp:"毎日楽しく生きましょう。",vocab:"生きる",furigana:"<ruby>毎日<rt>まいにち</rt></ruby><ruby>楽<rt>たの</rt></ruby>しく<ruby>生<rt>い</rt></ruby>きましょう。"},
+      {en:"I want to live to be 100 years old.",jp:"私は100歳まで生きたいです。",vocab:"生きる",furigana:"<ruby>私<rt>わたし</rt></ruby>は<ruby>100歳<rt>ひゃくさい</rt></ruby>まで<ruby>生<rt>い</rt></ruby>きたいです。"},
+      {en:"Please don't worry too much.",jp:"心配しすぎないでください。",vocab:"心配する",furigana:"<ruby>心配<rt>しんぱい</rt></ruby>しすぎないでください。"},
+      {en:"Since my friend hasn't come yet, I'm worried.",jp:"まだ友達が来ていないので、心配しています。",vocab:"心配する",furigana:"まだ<ruby>友達<rt>ともだち</rt></ruby>が<ruby>来<rt>き</rt></ruby>ていないので、<ruby>心配<rt>しんぱい</rt></ruby>しています。"},
+    ]
+  },
+  {
+    id: 18,
+    label: "Vol 6",
+    qaSet: true,
+    words: [
+      {
+        q:"再来年、何をしてみたいですか。",
+        qf:"<ruby>再来年<rt>さらいねん</rt></ruby>、<ruby>何<rt>なに</rt></ruby>をしてみたいですか。",
+        qen:"What would you like to try doing the year after next?",
+        a:"日本に旅行に行ったり、スキーをしたりしてみたいです。",
+        af:"<ruby>日本<rt>にほん</rt></ruby>に<ruby>旅行<rt>りょこう</rt></ruby>に<ruby>行<rt>い</rt></ruby>ったり、スキーをしたりしてみたいです。",
+        aen:"I'd like to try traveling to Japan and going skiing."
+      },
+      {
+        q:"今年何をするつもりですか。",
+        qf:"<ruby>今年<rt>ことし</rt></ruby><ruby>何<rt>なに</rt></ruby>をするつもりですか。",
+        qen:"What are you planning to do this year?",
+        a:"今年、新しいカメラを買って、たくさん自然の写真をとるつもりです。",
+        af:"<ruby>今年<rt>ことし</rt></ruby>、<ruby>新<rt>あたら</rt></ruby>しいカメラを<ruby>買<rt>か</rt></ruby>って、たくさん<ruby>自然<rt>しぜん</rt></ruby>の<ruby>写真<rt>しゃしん</rt></ruby>をとるつもりです。",
+        aen:"This year, I plan to buy a new camera and take lots of nature photos."
+      },
+      {
+        q:"5年後に何をしているかもしれませんか。",
+        qf:"<ruby>5年後<rt>ごねんご</rt></ruby>に<ruby>何<rt>なに</rt></ruby>をしているかもしれませんか。",
+        qen:"What might you be doing in 5 years?",
+        a:"5年後に新しい家を買うかもしれません。でも子供がいないかもしれません。",
+        af:"<ruby>5年後<rt>ごねんご</rt></ruby>に<ruby>新<rt>あたら</rt></ruby>しい<ruby>家<rt>いえ</rt></ruby>を<ruby>買<rt>か</rt></ruby>うかもしれません。でも<ruby>子供<rt>こども</rt></ruby>がいないかもしれません。",
+        aen:"In 5 years, I might buy a new house. But I might not have children."
+      },
+      {
+        q:"来年は何をしなければいけませんか。",
+        qf:"<ruby>来年<rt>らいねん</rt></ruby>は<ruby>何<rt>なに</rt></ruby>をしなければいけませんか。",
+        qen:"What do you have to do next year?",
+        a:"来年、友達が日本に来るので、ホテルやツアーを予約しなければいけません。",
+        af:"<ruby>来年<rt>らいねん</rt></ruby>、<ruby>友達<rt>ともだち</rt></ruby>が<ruby>日本<rt>にほん</rt></ruby>に<ruby>来<rt>く</rt></ruby>るので、ホテルやツアーを<ruby>予約<rt>よやく</rt></ruby>しなければいけません。",
+        aen:"Because next year, my friend is coming to Japan, I have to book hotels and tours."
+      },
+      {
+        q:"将来何になりたいですか。どうしてですか。",
+        qf:"<ruby>将来<rt>しょうらい</rt></ruby><ruby>何<rt>なに</rt></ruby>になりたいですか。どうしてですか。",
+        qen:"What do you want to become in the future? Why?",
+        a:"教えるのが好きだから、将来、高校の先生になりたいです。",
+        af:"<ruby>教<rt>おし</rt></ruby>えるのが<ruby>好<rt>す</rt></ruby>きだから、<ruby>将来<rt>しょうらい</rt></ruby>、<ruby>高校<rt>こうこう</rt></ruby>の<ruby>先生<rt>せんせい</rt></ruby>になりたいです。",
+        aen:"Because I like teaching, I want to become a high school teacher in the future."
+      },
+      {
+        q:"スカイダイビングをしたことがありますか。",
+        qf:"スカイダイビングをしたことがありますか。",
+        qen:"Have you ever gone skydiving?",
+        a:"いいえ。したことがありません。でもしてみたいです。",
+        af:"いいえ。したことがありません。でもしてみたいです。",
+        aen:"No, I haven't. But I'd like to try."
+      },
+      {
+        q:"10年後に何をしていないかもしれませんか。",
+        qf:"<ruby>10年後<rt>じゅうねんご</rt></ruby>に<ruby>何<rt>なに</rt></ruby>をしていないかもしれませんか。",
+        qen:"What might you not be doing in 10 years?",
+        a:"10年後に仕事をしていないかもしれません。",
+        af:"<ruby>10年後<rt>じゅうねんご</rt></ruby>に<ruby>仕事<rt>しごと</rt></ruby>をしていないかもしれません。",
+        aen:"In 10 years, I might not be working."
+      },
+      {
+        q:"どうして、来年日本に行かなければいけませんか。",
+        qf:"どうして、<ruby>来年<rt>らいねん</rt></ruby><ruby>日本<rt>にほん</rt></ruby>に<ruby>行<rt>い</rt></ruby>かなければいけませんか。",
+        qen:"Why do you have to go to Japan next year?",
+        a:"妻の家族や日本の友達に会ったり、日本で家を買ったりしなければいけないので、日本に行かなければいけません。",
+        af:"<ruby>妻<rt>つま</rt></ruby>の<ruby>家族<rt>かぞく</rt></ruby>や<ruby>日本<rt>にほん</rt></ruby>の<ruby>友達<rt>ともだち</rt></ruby>に<ruby>会<rt>あ</rt></ruby>ったり、<ruby>日本<rt>にほん</rt></ruby>で<ruby>家<rt>いえ</rt></ruby>を<ruby>買<rt>か</rt></ruby>ったりしなければいけないので、<ruby>日本<rt>にほん</rt></ruby>に<ruby>行<rt>い</rt></ruby>かなければいけません。",
+        aen:"Because I have to meet my wife's family and my friends in Japan, and buy a house in Japan, I have to go to Japan."
+      },
+      {
+        q:"3年後に同じ街に住んでいると思いますか。",
+        qf:"<ruby>3年後<rt>さんねんご</rt></ruby>に<ruby>同<rt>おな</rt></ruby>じ<ruby>街<rt>まち</rt></ruby>に<ruby>住<rt>す</rt></ruby>んでいると<ruby>思<rt>おも</rt></ruby>いますか。",
+        qen:"Do you think you will be living in the same city in 3 years?",
+        a:"3年後に同じ街に住んでいないかもしれません。日本にいないかもしれません。",
+        af:"<ruby>3年後<rt>さんねんご</rt></ruby>に<ruby>同<rt>おな</rt></ruby>じ<ruby>街<rt>まち</rt></ruby>に<ruby>住<rt>す</rt></ruby>んでいないかもしれません。<ruby>日本<rt>にほん</rt></ruby>にいないかもしれません。",
+        aen:"In 3 years, I might not be living in the same city. I might not be in Japan."
+      },
+      {
+        q:"5年後に結婚しているかもしれない友達がいますか。",
+        qf:"<ruby>5年後<rt>ごねんご</rt></ruby>に<ruby>結婚<rt>けっこん</rt></ruby>しているかもしれない<ruby>友達<rt>ともだち</rt></ruby>がいますか。",
+        qen:"Do you have a friend who might be married in 5 years?",
+        a:"はい。髪が長くて優しい友達は5年後に今の彼女と結婚しているかもしれません。",
+        af:"はい。<ruby>髪<rt>かみ</rt></ruby>が<ruby>長<rt>なが</rt></ruby>くて<ruby>優<rt>やさ</rt></ruby>しい<ruby>友達<rt>ともだち</rt></ruby>は<ruby>5年後<rt>ごねんご</rt></ruby>に<ruby>今<rt>いま</rt></ruby>の<ruby>彼女<rt>かのじょ</rt></ruby>と<ruby>結婚<rt>けっこん</rt></ruby>しているかもしれません。",
+        aen:"Yes. My friend who has long hair and is kind might be married to his current girlfriend in 5 years."
+      },
+    ]
+  },
+  {
+    id: 19,
+    label: "Vol 7",
+    words: [
+      {en:"To finish",jp:"終わる",kana:"おわる"},
+      {en:"Recently",jp:"最近",kana:"さいきん"},
+      {en:"Weak",jp:"弱い",kana:"よわい"},
+      {en:"Day trip",jp:"日帰り",kana:"ひがえり"},
+      {en:"Alone",jp:"一人で",kana:"ひとりで"},
+      {en:"To climb",jp:"登る",kana:"のぼる"},
+      {en:"Actually",jp:"実は",kana:"じつは"},
+      {en:"My wife",jp:"妻",kana:"つま"},
+      {en:"Someone's wife",jp:"奥さん",kana:"おくさん"},
+      {en:"Other",jp:"他",kana:"ほか"},
+      {en:"Awesome",jp:"最高",kana:"さいこう"},
+      {en:"Evening",jp:"夕方",kana:"ゆうがた"},
+      {en:"Lie",jp:"嘘",kana:"うそ"},
+      {en:"To shoot photos / Videos",jp:"撮影する",kana:"さつえいする"},
+      {en:"To teach",jp:"教える",kana:"おしえる"},
+      {en:"Videos",jp:"動画",kana:"どうが"},
+      {en:"To spend time",jp:"過ごす",kana:"すごす"},
+      {en:"To go out",jp:"出かける",kana:"でかける"},
+      {en:"Chinatown",jp:"中華街",kana:"ちゅうかがい"},
+      {en:"Few / Little",jp:"少ない",kana:"すくない"},
+      {en:"To go for a drive",jp:"ドライブする",kana:""},
+      {en:"To drive",jp:"運転する",kana:"うんてんする"},
+      {en:"To guide",jp:"案内する",kana:"あんないする"},
+      {en:"To be decided",jp:"決まる",kana:"きまる"},
+      {en:"To decide",jp:"決める",kana:"きめる"},
+      {en:"To be happy",jp:"喜ぶ",kana:"よろこぶ"},
+      {en:"True / I know / Exactly / For sure",jp:"確かに",kana:"たしかに"},
+      {en:"Intense",jp:"激しい",kana:"はげしい"},
+      {en:"To ski",jp:"スキーを滑る",kana:"すべる"},
+      {en:"To come out",jp:"出る",kana:"でる"},
+      {en:"To upload",jp:"載せる",kana:"のせる"},
+      {en:"To put",jp:"置く",kana:"おく"},
+      {en:"Women",jp:"女性",kana:"じょせい"},
+      {en:"To be available / To be free",jp:"空く",kana:"あく"},
+      {en:"To sing",jp:"歌う",kana:"うたう"},
+      {en:"Important",jp:"大切",kana:"たいせつ"},
+    ]
+  },
+  {
+    id: 20,
+    label: "Vol 7",
+    sentenceSet: true,
+    words: [
+      {en:"I've already finished my homework.",jp:"もう宿題が終わった。",vocab:"終わる",furigana:"もう<ruby>宿題<rt>しゅくだい</rt></ruby>が<ruby>終<rt>お</rt></ruby>わった。"},
+      {en:"I'll go home after the movie ends.",jp:"映画が終わったあとで帰るね。",vocab:"終わる",furigana:"<ruby>映画<rt>えいが</rt></ruby>が<ruby>終<rt>お</rt></ruby>わったあとで<ruby>帰<rt>かえ</rt></ruby>るね。"},
+      {en:"What have you been doing recently?",jp:"最近何していた。",vocab:"最近",furigana:"<ruby>最近<rt>さいきん</rt></ruby><ruby>何<rt>なに</rt></ruby>していた。"},
+      {en:"I haven't played the guitar at all recently.",jp:"最近、全然ギターを弾いていない。",vocab:"最近",furigana:"<ruby>最近<rt>さいきん</rt></ruby>、<ruby>全然<rt>ぜんぜん</rt></ruby>ギターを<ruby>弾<rt>ひ</rt></ruby>いていない。"},
+      {en:"The rain has weakened.",jp:"雨は弱くなったね。",vocab:"弱い",furigana:"<ruby>雨<rt>あめ</rt></ruby>は<ruby>弱<rt>よわ</rt></ruby>くなったね。"},
+      {en:"I don't think there's a weak team here.",jp:"ここに弱いチームはないと思う。",vocab:"弱い",furigana:"ここに<ruby>弱<rt>よわ</rt></ruby>いチームはないと<ruby>思<rt>おも</rt></ruby>う。"},
+      {en:"I'm planning to go on a day trip to Kyoto tomorrow.",jp:"明日、京都に日帰りで旅行に行くつもりだよ。",vocab:"日帰り",furigana:"<ruby>明日<rt>あす</rt></ruby>、<ruby>京都<rt>きょうと</rt></ruby>に<ruby>日帰<rt>ひがえ</rt></ruby>りで<ruby>旅行<rt>りょこう</rt></ruby>に<ruby>行<rt>い</rt></ruby>くつもりだよ。"},
+      {en:"Since it's a day trip, I have only a small amount of luggage today.",jp:"日帰りだから、今日は荷物が少ない。",vocab:"日帰り",furigana:"<ruby>日帰<rt>ひがえ</rt></ruby>りだから、<ruby>今日<rt>きょう</rt></ruby>は<ruby>荷物<rt>にもつ</rt></ruby>が<ruby>少<rt>すく</rt></ruby>ない。"},
+      {en:"I feel lonely, so I don't want to go home alone.",jp:"寂しいから、一人で家に帰りたくない。",vocab:"一人で",furigana:"<ruby>寂<rt>さび</rt></ruby>しいから、<ruby>一人<rt>ひとり</rt></ruby>で<ruby>家<rt>いえ</rt></ruby>に<ruby>帰<rt>かえ</rt></ruby>りたくない。"},
+      {en:"Since it's dangerous, don't go out alone at night.",jp:"危ないから、一人で夜、出かけないで。",vocab:"一人で",furigana:"<ruby>危<rt>あぶ</rt></ruby>ないから、<ruby>一人<rt>ひとり</rt></ruby>で<ruby>夜<rt>よる</rt></ruby>、<ruby>出<rt>で</rt></ruby>かけないで。"},
+      {en:"I don't like climbing mountains.",jp:"山に登るのが好きじゃない。",vocab:"登る",furigana:"<ruby>山<rt>やま</rt></ruby>に<ruby>登<rt>のぼ</rt></ruby>るのが<ruby>好<rt>す</rt></ruby>きじゃない。"},
+      {en:"When I was a child, I always wanted to climb trees.",jp:"子供の時、いつも木に登りたかった。",vocab:"登る",furigana:"<ruby>子供<rt>こども</rt></ruby>の<ruby>時<rt>とき</rt></ruby>、いつも<ruby>木<rt>き</rt></ruby>に<ruby>登<rt>のぼ</rt></ruby>りたかった。"},
+      {en:"Actually, I've liked Takeshi since high school.",jp:"実は高校生の時から、たけしさんが好きだった。",vocab:"実は",furigana:"<ruby>実<rt>じつ</rt></ruby>は<ruby>高校生<rt>こうこうせい</rt></ruby>の<ruby>時<rt>とき</rt></ruby>から、たけしさんが<ruby>好<rt>す</rt></ruby>きだった。"},
+      {en:"Actually, I've never eaten ramen before.",jp:"実はまだラーメンを食べたことがない。",vocab:"実は",furigana:"<ruby>実<rt>じつ</rt></ruby>はまだラーメンを<ruby>食<rt>た</rt></ruby>べたことがない。"},
+      {en:"I'm looking forward to traveling to Japan with my wife.",jp:"妻と日本に旅行に行くのが楽しみ。",vocab:"妻",furigana:"<ruby>妻<rt>つま</rt></ruby>と<ruby>日本<rt>にほん</rt></ruby>に<ruby>旅行<rt>りょこう</rt></ruby>に<ruby>行<rt>い</rt></ruby>くのが<ruby>楽<rt>たの</rt></ruby>しみ。"},
+      {en:"Today, I plan to buy a present for my wife.",jp:"今日、妻にプレゼントを買いに行くつもりだよ。",vocab:"妻",furigana:"<ruby>今日<rt>きょう</rt></ruby>、<ruby>妻<rt>つま</rt></ruby>にプレゼントを<ruby>買<rt>か</rt></ruby>いに<ruby>行<rt>い</rt></ruby>くつもりだよ。"},
+      {en:"My friend's wife is kind and funny.",jp:"私の友達の奥さんは、優しくて、面白い女性だね。",vocab:"奥さん",furigana:"<ruby>私<rt>わたし</rt></ruby>の<ruby>友達<rt>ともだち</rt></ruby>の<ruby>奥<rt>おく</rt></ruby>さんは、<ruby>優<rt>やさ</rt></ruby>しくて、<ruby>面白<rt>おもしろ</rt></ruby>い<ruby>女性<rt>じょせい</rt></ruby>だね。"},
+      {en:"My coworker's wife always wakes up in the morning and eats a hamburger.",jp:"私の同僚の奥さんはいつも朝起きて、ハンバーガーを食べる。",vocab:"奥さん",furigana:"<ruby>私<rt>わたし</rt></ruby>の<ruby>同僚<rt>どうりょう</rt></ruby>の<ruby>奥<rt>おく</rt></ruby>さんはいつも<ruby>朝<rt>あさ</rt></ruby><ruby>起<rt>お</rt></ruby>きて、ハンバーガーを<ruby>食<rt>た</rt></ruby>べる。"},
+      {en:"Show me other bags too.",jp:"他のカバンも見せて。",vocab:"他",furigana:"<ruby>他<rt>ほか</rt></ruby>のカバンも<ruby>見<rt>み</rt></ruby>せて。"},
+      {en:"Since this place is too crowded, shall we go to another store?",jp:"ここはにぎやかすぎるから、他の店に行かない？",vocab:"他",furigana:"ここはにぎやかすぎるから、<ruby>他<rt>ほか</rt></ruby>の<ruby>店<rt>みせ</rt></ruby>に<ruby>行<rt>い</rt></ruby>かない？"},
+      {en:"The trip to Japan was awesome.",jp:"日本の旅行は最高だった。",vocab:"最高",furigana:"<ruby>日本<rt>にほん</rt></ruby>の<ruby>旅行<rt>りょこう</rt></ruby>は<ruby>最高<rt>さいこう</rt></ruby>だった。"},
+      {en:"That's an awesome idea!",jp:"それは最高なアイディアだね！",vocab:"最高",furigana:"それは<ruby>最高<rt>さいこう</rt></ruby>なアイディアだね！"},
+      {en:"It started raining in the evening yesterday.",jp:"昨日は夕方から雨が降った。",vocab:"夕方",furigana:"<ruby>昨日<rt>きのう</rt></ruby>は<ruby>夕方<rt>ゆうがた</rt></ruby>から<ruby>雨<rt>あめ</rt></ruby>が<ruby>降<rt>ふ</rt></ruby>った。"},
+      {en:"I have to go home this evening.",jp:"今日は夕方に帰らなきゃいけない。",vocab:"夕方",furigana:"<ruby>今日<rt>きょう</rt></ruby>は<ruby>夕方<rt>ゆうがた</rt></ruby>に<ruby>帰<rt>かえ</rt></ruby>らなきゃいけない。"},
+      {en:"Don't tell lies!",jp:"嘘をつかないで！",vocab:"嘘",furigana:"<ruby>嘘<rt>うそ</rt></ruby>をつかないで！"},
+      {en:"No way! I didn't do it!",jp:"嘘！私はしてないよ！",vocab:"嘘",furigana:"<ruby>嘘<rt>うそ</rt></ruby>！<ruby>私<rt>わたし</rt></ruby>はしてないよ！"},
+      {en:"Is it okay to shoot here?",jp:"ここで撮影してもいい？",vocab:"撮影する",furigana:"ここで<ruby>撮影<rt>さつえい</rt></ruby>してもいい？"},
+      {en:"Tomorrow, I'm going to San Francisco to shoot a YouTube video.",jp:"明日、サンフランシスコにYouTubeの撮影しに行くよ。",vocab:"撮影する",furigana:"<ruby>明日<rt>あす</rt></ruby>、サンフランシスコにYouTubeの<ruby>撮影<rt>さつえい</rt></ruby>しに<ruby>行<rt>い</rt></ruby>くよ。"},
+      {en:"Since it's difficult, please teach me more kanji.",jp:"難しいから、もっと漢字を教えて。",vocab:"教える",furigana:"<ruby>難<rt>むずか</rt></ruby>しいから、もっと<ruby>漢字<rt>かんじ</rt></ruby>を<ruby>教<rt>おし</rt></ruby>えて。"},
+      {en:"I'm an English teacher, but actually I don't really like teaching much.",jp:"英語の先生だけど、実はあまり教えるのが好きじゃない。",vocab:"教える",furigana:"<ruby>英語<rt>えいご</rt></ruby>の<ruby>先生<rt>せんせい</rt></ruby>だけど、<ruby>実<rt>じつ</rt></ruby>はあまり<ruby>教<rt>おし</rt></ruby>えるのが<ruby>好<rt>す</rt></ruby>きじゃない。"},
+      {en:"Did you already watch the video I posted yesterday?",jp:"もう私が昨日、載せた動画見た？",vocab:"動画",furigana:"もう<ruby>私<rt>わたし</rt></ruby>が<ruby>昨日<rt>きのう</rt></ruby>、<ruby>載<rt>の</rt></ruby>せた<ruby>動画<rt>どうが</rt></ruby><ruby>見<rt>み</rt></ruby>た？"},
+      {en:"Is shooting videos fun?",jp:"動画を撮影するのは楽しい？",vocab:"動画",furigana:"<ruby>動画<rt>どうが</rt></ruby>を<ruby>撮影<rt>さつえい</rt></ruby>するのは<ruby>楽<rt>たの</rt></ruby>しい？"},
+      {en:"Who do you want to spend Christmas with?",jp:"クリスマスは誰と一緒に過ごしたい？",vocab:"過ごす",furigana:"クリスマスは<ruby>誰<rt>だれ</rt></ruby>と<ruby>一緒<rt>いっしょ</rt></ruby>に<ruby>過<rt>す</rt></ruby>ごしたい？"},
+      {en:"How are you planning to spend your summer vacation this year?",jp:"今年の夏休みはどう過ごすつもり？",vocab:"過ごす",furigana:"<ruby>今年<rt>ことし</rt></ruby>の<ruby>夏休<rt>なつやす</rt></ruby>みはどう<ruby>過<rt>す</rt></ruby>ごすつもり？"},
+      {en:"You shouldn't go out on snowy days.",jp:"雪の日は出かけないほうがいいよ。",vocab:"出かける",furigana:"<ruby>雪<rt>ゆき</rt></ruby>の<ruby>日<rt>ひ</rt></ruby>は<ruby>出<rt>で</rt></ruby>かけないほうがいいよ。"},
+      {en:"When I was a child, I didn't want to go out much on holidays.",jp:"子供の時、休みの日にあまり出かけたくなかった。",vocab:"出かける",furigana:"<ruby>子供<rt>こども</rt></ruby>の<ruby>時<rt>とき</rt></ruby>、<ruby>休<rt>やす</rt></ruby>みの<ruby>日<rt>ひ</rt></ruby>にあまり<ruby>出<rt>で</rt></ruby>かけたくなかった。"},
+      {en:"Shall we go to Chinatown in Yokohama for lunch?",jp:"横浜の中華街に昼ごはんを食べに行かない？",vocab:"中華街",furigana:"<ruby>横浜<rt>よこはま</rt></ruby>の<ruby>中華街<rt>ちゅうかがい</rt></ruby>に<ruby>昼<rt>ひる</rt></ruby>ごはんを<ruby>食<rt>た</rt></ruby>べに<ruby>行<rt>い</rt></ruby>かない？"},
+      {en:"Have you ever been to Chinatown in Kobe?",jp:"神戸の中華街に行ったことがある？",vocab:"中華街",furigana:"<ruby>神戸<rt>こうべ</rt></ruby>の<ruby>中華街<rt>ちゅうかがい</rt></ruby>に<ruby>行<rt>い</rt></ruby>ったことがある？"},
+      {en:"I think this town is quiet because there are few people.",jp:"この街は人が少なくて、静かだと思う。",vocab:"少ない",furigana:"この<ruby>街<rt>まち</rt></ruby>は<ruby>人<rt>ひと</rt></ruby>が<ruby>少<rt>すく</rt></ruby>なくて、<ruby>静<rt>しず</rt></ruby>かだと<ruby>思<rt>おも</rt></ruby>う。"},
+      {en:"I was still hungry because lunch was too small.",jp:"昼ごはんは少なかったから、お腹が空いた。",vocab:"少ない",furigana:"<ruby>昼<rt>ひる</rt></ruby>ごはんは<ruby>少<rt>すく</rt></ruby>なかったから、お<ruby>腹<rt>なか</rt></ruby>が<ruby>空<rt>す</rt></ruby>いた。"},
+      {en:"I love going for a drive alone sometimes.",jp:"ときどき一人でドライブするのが大好き。",vocab:"ドライブする",furigana:"ときどき<ruby>一人<rt>ひとり</rt></ruby>でドライブするのが<ruby>大好<rt>だいす</rt></ruby>き。"},
+      {en:"Last weekend, I drove to the sea.",jp:"先週末、海までドライブした。",vocab:"ドライブする",furigana:"<ruby>先週末<rt>せんしゅうまつ</rt></ruby>、<ruby>海<rt>うみ</rt></ruby>までドライブした。"},
+      {en:"Since he drives every day, he's good at driving.",jp:"彼は毎日運転しているから運転するのが上手。",vocab:"運転する",furigana:"<ruby>彼<rt>かれ</rt></ruby>は<ruby>毎日<rt>まいにち</rt></ruby><ruby>運転<rt>うんてん</rt></ruby>しているから<ruby>運転<rt>うんてん</rt></ruby>するのが<ruby>上手<rt>じょうず</rt></ruby>。"},
+      {en:"You shouldn't drive on days when the wind is strong.",jp:"風が強い日は運転しないほうがいいよ。",vocab:"運転する",furigana:"<ruby>風<rt>かぜ</rt></ruby>が<ruby>強<rt>つよ</rt></ruby>い<ruby>日<rt>ひ</rt></ruby>は<ruby>運転<rt>うんてん</rt></ruby>しないほうがいいよ。"},
+      {en:"Since my friend is coming to Japan, I plan to guide him around Tokyo tomorrow.",jp:"友達が日本に来るから、明日、東京を案内するつもりだよ。",vocab:"案内する",furigana:"<ruby>友達<rt>ともだち</rt></ruby>が<ruby>日本<rt>にほん</rt></ruby>に<ruby>来<rt>く</rt></ruby>るから、<ruby>明日<rt>あす</rt></ruby>、<ruby>東京<rt>とうきょう</rt></ruby>を<ruby>案内<rt>あんない</rt></ruby>するつもりだよ。"},
+      {en:"Since he'll guide you to the station, don't worry.",jp:"彼が駅まで案内するから、心配しないで。",vocab:"案内する",furigana:"<ruby>彼<rt>かれ</rt></ruby>が<ruby>駅<rt>えき</rt></ruby>まで<ruby>案内<rt>あんない</rt></ruby>するから、<ruby>心配<rt>しんぱい</rt></ruby>しないで。"},
+      {en:"Since my work hours aren't fixed, I like this job.",jp:"私の仕事の時間は決まっていないから、この仕事が好き。",vocab:"決まる",furigana:"<ruby>私<rt>わたし</rt></ruby>の<ruby>仕事<rt>しごと</rt></ruby>の<ruby>時間<rt>じかん</rt></ruby>は<ruby>決<rt>き</rt></ruby>まっていないから、この<ruby>仕事<rt>しごと</rt></ruby>が<ruby>好<rt>す</rt></ruby>き。"},
+      {en:"Since the time of this movie is fixed, hurry.",jp:"この映画の時間は決まっているから、急がで。",vocab:"決まる",furigana:"この<ruby>映画<rt>えいが</rt></ruby>の<ruby>時間<rt>じかん</rt></ruby>は<ruby>決<rt>き</rt></ruby>まっているから、<ruby>急<rt>いそ</rt></ruby>がで。"},
+      {en:"Can I decide on the restaurant myself?",jp:"レストランを自分で決めてもいい？",vocab:"決める",furigana:"レストランを<ruby>自分<rt>じぶん</rt></ruby>で<ruby>決<rt>き</rt></ruby>めてもいい？"},
+      {en:"I want to decide my life by myself.",jp:"自分の人生は自分で決めたい。",vocab:"決める",furigana:"<ruby>自分<rt>じぶん</rt></ruby>の<ruby>人生<rt>じんせい</rt></ruby>は<ruby>自分<rt>じぶん</rt></ruby>で<ruby>決<rt>き</rt></ruby>めたい。"},
+      {en:"My husband was happy to receive the present.",jp:"夫はプレゼントをもらって、喜んでいた。",vocab:"喜ぶ",furigana:"<ruby>夫<rt>おっと</rt></ruby>はプレゼントをもらって、<ruby>喜<rt>よろこ</rt></ruby>んでいた。"},
+      {en:"My father was happy to hear the news.",jp:"そのニュースを聞いて父は喜んでいた。",vocab:"喜ぶ",furigana:"そのニュースを<ruby>聞<rt>き</rt></ruby>いて<ruby>父<rt>ちち</rt></ruby>は<ruby>喜<rt>よろこ</rt></ruby>んでいた。"},
+      {en:"Exactly! I want to ski in Japan!",jp:"確かに！日本でスキーを滑りたい！",vocab:"確かに",furigana:"<ruby>確<rt>たし</rt></ruby>かに！<ruby>日本<rt>にほん</rt></ruby>でスキーを<ruby>滑<rt>すべ</rt></ruby>りたい！"},
+      {en:"Indeed, airplane tickets are more expensive now.",jp:"確かに今は飛行機のチケットが高くなったね。",vocab:"確かに",furigana:"<ruby>確<rt>たし</rt></ruby>かに<ruby>今<rt>いま</rt></ruby>は<ruby>飛行機<rt>ひこうき</rt></ruby>のチケットが<ruby>高<rt>たか</rt></ruby>くなったね。"},
+      {en:"I don't want to do very intense sports.",jp:"あまり激しいスポーツをしたくない。",vocab:"激しい",furigana:"あまり<ruby>激<rt>はげ</rt></ruby>しいスポーツをしたくない。"},
+      {en:"The doctor said I shouldn't do intense exercise.",jp:"医者は激しい運動をしないほうがいいと言っていた。",vocab:"激しい",furigana:"<ruby>医者<rt>いしゃ</rt></ruby>は<ruby>激<rt>はげ</rt></ruby>しい<ruby>運動<rt>うんどう</rt></ruby>をしないほうがいいと<ruby>言<rt>い</rt></ruby>っていた。"},
+      {en:"I often go skiing in winter.",jp:"冬によくスキーを滑りに行く。",vocab:"スキーを滑る",furigana:"<ruby>冬<rt>ふゆ</rt></ruby>によくスキーを<ruby>滑<rt>すべ</rt></ruby>りに<ruby>行<rt>い</rt></ruby>く。"},
+      {en:"I've never skied in Switzerland.",jp:"スイスでスキーを滑ったことがない。",vocab:"スキーを滑る",furigana:"スイスでスキーを<ruby>滑<rt>すべ</rt></ruby>ったことがない。"},
+      {en:"I can't come up with any good ideas today.",jp:"今日は、あまりいいアイディアが出ない。",vocab:"出る",furigana:"<ruby>今日<rt>きょう</rt></ruby>は、あまりいいアイディアが<ruby>出<rt>で</rt></ruby>ない。"},
+      {en:"I won't go to school today because I have a fever.",jp:"熱が出たから、今日は学校に行かないつもり。",vocab:"出る",furigana:"<ruby>熱<rt>ねつ</rt></ruby>が<ruby>出<rt>で</rt></ruby>たから、<ruby>今日<rt>きょう</rt></ruby>は<ruby>学校<rt>がっこう</rt></ruby>に<ruby>行<rt>い</rt></ruby>かないつもり。"},
+      {en:"I can play in the game tomorrow.",jp:"明日は試合に出られる。",vocab:"出る",furigana:"<ruby>明日<rt>あす</rt></ruby>は<ruby>試合<rt>しあい</rt></ruby>に<ruby>出<rt>で</rt></ruby>られる。"},
+      {en:"Can I upload this video to YouTube?",jp:"この動画をYouTubeに載せてもいい？",vocab:"載せる",furigana:"この<ruby>動画<rt>どうが</rt></ruby>をYouTubeに<ruby>載<rt>の</rt></ruby>せてもいい？"},
+      {en:"Did you watch the video I uploaded on YouTube yesterday?",jp:"昨日YouTubeに載せた動画を見た？",vocab:"載せる",furigana:"<ruby>昨日<rt>きのう</rt></ruby>YouTubeに<ruby>載<rt>の</rt></ruby>せた<ruby>動画<rt>どうが</rt></ruby>を<ruby>見<rt>み</rt></ruby>た？"},
+      {en:"You can't put your bicycle here.",jp:"ここに自転車を置いてはいけないよ。",vocab:"置く",furigana:"ここに<ruby>自転車<rt>じてんしゃ</rt></ruby>を<ruby>置<rt>お</rt></ruby>いてはいけないよ。"},
+      {en:"Yesterday, I put my luggage in the hotel and went out immediately.",jp:"昨日はホテルに荷物を置いて、すぐ出かけた。",vocab:"置く",furigana:"<ruby>昨日<rt>きのう</rt></ruby>はホテルに<ruby>荷物<rt>にもつ</rt></ruby>を<ruby>置<rt>お</rt></ruby>いて、すぐ<ruby>出<rt>で</rt></ruby>かけた。"},
+      {en:"I met a woman I talked to three years ago.",jp:"３年前に話した女性に会った。",vocab:"女性",furigana:"<ruby>３年前<rt>さんねんまえ</rt></ruby>に<ruby>話<rt>はな</rt></ruby>した<ruby>女性<rt>じょせい</rt></ruby>に<ruby>会<rt>あ</rt></ruby>った。"},
+      {en:"I think the woman playing guitar in that park is beautiful.",jp:"あの公園でギターを弾いている女性はきれいだと思う。",vocab:"女性",furigana:"あの<ruby>公園<rt>こうえん</rt></ruby>でギターを<ruby>弾<rt>ひ</rt></ruby>いている<ruby>女性<rt>じょせい</rt></ruby>はきれいだと<ruby>思<rt>おも</rt></ruby>う。"},
+      {en:"Are you free tomorrow?",jp:"明日空いている？",vocab:"空く",furigana:"<ruby>明日<rt>あす</rt></ruby><ruby>空<rt>あ</rt></ruby>いている？"},
+      {en:"There are free seats here.",jp:"ここは席が空いているよ。",vocab:"空く",furigana:"ここは<ruby>席<rt>せき</rt></ruby>が<ruby>空<rt>あ</rt></ruby>いているよ。"},
+      {en:"What kind of songs do you like to sing at karaoke?",jp:"カラオケでどんな歌を歌うのが好き？",vocab:"歌う",furigana:"カラオケでどんな<ruby>歌<rt>うた</rt></ruby>を<ruby>歌<rt>うた</rt></ruby>うのが<ruby>好<rt>す</rt></ruby>き？"},
+      {en:"When I was a child, I wanted to sing Japanese songs.",jp:"子供の時、日本の歌を歌いたかった。",vocab:"歌う",furigana:"<ruby>子供<rt>こども</rt></ruby>の<ruby>時<rt>とき</rt></ruby>、<ruby>日本<rt>にほん</rt></ruby>の<ruby>歌<rt>うた</rt></ruby>を<ruby>歌<rt>うた</rt></ruby>いたかった。"},
+      {en:"I gave my precious watch to my son.",jp:"私の大切なとけいを息子にあげた。",vocab:"大切",furigana:"<ruby>私<rt>わたし</rt></ruby>の<ruby>大切<rt>たいせつ</rt></ruby>なとけいを<ruby>息子<rt>むすこ</rt></ruby>にあげた。"},
+      {en:"I think health is the most important thing.",jp:"健康は一番大切だと思う。",vocab:"大切",furigana:"<ruby>健康<rt>けんこう</rt></ruby>は<ruby>一番大切<rt>たいせつ</rt></ruby>だと<ruby>思<rt>おも</rt></ruby>う。"},
+    ]
+  },
+  {
+    id: 21,
+    label: "Vol 7",
+    qaSet: true,
+    words: [
+      {
+        q:"昨日、何をした？",
+        qf:"<ruby>昨日<rt>きのう</rt></ruby>、<ruby>何<rt>なに</rt></ruby>をした？",
+        qen:"What did you do yesterday?",
+        a:"昨日は友達と買い物に行ったり、レストランで昼ごはんを食べたりしたよ。",
+        af:"<ruby>昨日<rt>きのう</rt></ruby>は<ruby>友達<rt>ともだち</rt></ruby>と<ruby>買<rt>か</rt></ruby>い<ruby>物<rt>もの</rt></ruby>に<ruby>行<rt>い</rt></ruby>ったり、レストランで<ruby>昼<rt>ひる</rt></ruby>ごはんを<ruby>食<rt>た</rt></ruby>べたりしたよ。",
+        aen:"I went shopping with my friends and had lunch at a restaurant."
+      },
+      {
+        q:"今週末何をしたい？",
+        qf:"<ruby>今週末<rt>こんしゅうまつ</rt></ruby><ruby>何<rt>なに</rt></ruby>をしたい？",
+        qen:"What do you want to do this weekend?",
+        a:"今週末は行ったことがないレストランに行きたい。",
+        af:"<ruby>今週末<rt>こんしゅうまつ</rt></ruby>は<ruby>行<rt>い</rt></ruby>ったことがないレストランに<ruby>行<rt>い</rt></ruby>きたい。",
+        aen:"I want to go to a restaurant I've never been to before."
+      },
+      {
+        q:"昨日の午後５時ごろ何していた？",
+        qf:"<ruby>昨日<rt>きのう</rt></ruby>の<ruby>午後<rt>ごご</rt></ruby>５<ruby>時<rt>じ</rt></ruby>ごろ<ruby>何<rt>なに</rt></ruby>していた？",
+        qen:"What were you doing around 5 p.m. yesterday?",
+        a:"昨日の午後５時ごろ、夫とテレビを見ていたよ。",
+        af:"<ruby>昨日<rt>きのう</rt></ruby>の<ruby>午後<rt>ごご</rt></ruby>５<ruby>時<rt>じ</rt></ruby>ごろ、<ruby>夫<rt>おっと</rt></ruby>とテレビを<ruby>見<rt>み</rt></ruby>ていたよ。",
+        aen:"I was watching TV with my husband around 5 p.m. yesterday."
+      },
+      {
+        q:"どうして昨日、パーティに来なかった？",
+        qf:"どうして<ruby>昨日<rt>きのう</rt></ruby>、パーティに<ruby>来<rt>こ</rt></ruby>なかった？",
+        qen:"Why didn't you come to the party yesterday?",
+        a:"ごめん。昨日、仕事が忙しすぎたから、行けなかった。",
+        af:"ごめん。<ruby>昨日<rt>きのう</rt></ruby>、<ruby>仕事<rt>しごと</rt></ruby>が<ruby>忙<rt>いそが</rt></ruby>しすぎたから、<ruby>行<rt>い</rt></ruby>けなかった。",
+        aen:"Sorry. I couldn't go because work was too busy yesterday."
+      },
+      {
+        q:"今日、すしとラーメンとどっちのほうが食べに行きたい？",
+        qf:"<ruby>今日<rt>きょう</rt></ruby>、すしとラーメンとどっちのほうが<ruby>食<rt>た</rt></ruby>べに<ruby>行<rt>い</rt></ruby>きたい？",
+        qen:"Today, which do you want to eat more: sushi or ramen?",
+        a:"ラーメンのほうが食べに行きたい。",
+        af:"ラーメンのほうが<ruby>食<rt>た</rt></ruby>べに<ruby>行<rt>い</rt></ruby>きたい。",
+        aen:"I want to eat ramen more."
+      },
+      {
+        q:"日本で何をしないほうがいいと思う？",
+        qf:"<ruby>日本<rt>にほん</rt></ruby>で<ruby>何<rt>なに</rt></ruby>をしないほうがいいと<ruby>思<rt>おも</rt></ruby>う？",
+        qen:"What do you think you shouldn't do in Japan?",
+        a:"日本の電車で電話しないほうがいいと思う。",
+        af:"<ruby>日本<rt>にほん</rt></ruby>の<ruby>電車<rt>でんしゃ</rt></ruby>で<ruby>電話<rt>でんわ</rt></ruby>しないほうがいいと<ruby>思<rt>おも</rt></ruby>う。",
+        aen:"I think you shouldn't talk on the phone on trains in Japan."
+      },
+      {
+        q:"昨日、何をするつもりだった？",
+        qf:"<ruby>昨日<rt>きのう</rt></ruby>、<ruby>何<rt>なに</rt></ruby>をするつもりだった？",
+        qen:"What were you planning to do yesterday?",
+        a:"昨日、いらない服を売りに行くつもりだったけど、行けなかった。",
+        af:"<ruby>昨日<rt>きのう</rt></ruby>、いらない<ruby>服<rt>ふく</rt></ruby>を<ruby>売<rt>う</rt></ruby>りに<ruby>行<rt>い</rt></ruby>くつもりだったけど、<ruby>行<rt>い</rt></ruby>けなかった。",
+        aen:"I was planning to sell some unwanted clothes yesterday, but I couldn't go."
+      },
+      {
+        q:"明後日の夜、暇？",
+        qf:"<ruby>明後日<rt>あさって</rt></ruby>の<ruby>夜<rt>よる</rt></ruby>、<ruby>暇<rt>ひま</rt></ruby>？",
+        qen:"Are you free the night after tomorrow?",
+        a:"ごめん。明後日の夜は友達とキャンプに行くから暇じゃない。",
+        af:"ごめん。<ruby>明後日<rt>あさって</rt></ruby>の<ruby>夜<rt>よる</rt></ruby>は<ruby>友達<rt>ともだち</rt></ruby>とキャンプに<ruby>行<rt>い</rt></ruby>くから<ruby>暇<rt>ひま</rt></ruby>じゃない。",
+        aen:"Sorry. I'm not free the night after tomorrow because I'm going camping with friends."
+      },
+      {
+        q:"先週末はどうだった？",
+        qf:"<ruby>先週末<rt>せんしゅうまつ</rt></ruby>はどうだった？",
+        qen:"How was last weekend?",
+        a:"先週末はすごく楽しかったよ。妻とハイキングに行って、山の上のバーでビールを飲んだよ。",
+        af:"<ruby>先週末<rt>せんしゅうまつ</rt></ruby>はすごく<ruby>楽<rt>たの</rt></ruby>しかったよ。<ruby>妻<rt>つま</rt></ruby>とハイキングに<ruby>行<rt>い</rt></ruby>って、<ruby>山<rt>やま</rt></ruby>の<ruby>上<rt>うえ</rt></ruby>のバーでビールを<ruby>飲<rt>の</rt></ruby>んだよ。",
+        aen:"Last weekend was really fun. I went hiking with my wife and had beer at a bar on top of the mountain."
+      },
+      {
+        q:"昨日のサッカーの試合を見た？",
+        qf:"<ruby>昨日<rt>きのう</rt></ruby>のサッカーの<ruby>試合<rt>しあい</rt></ruby>を<ruby>見<rt>み</rt></ruby>た？",
+        qen:"Did you watch yesterday's soccer game?",
+        a:"見たよ！すごかったね！本当にいい試合だったね！",
+        af:"<ruby>見<rt>み</rt></ruby>たよ！すごかったね！<ruby>本当<rt>ほんとう</rt></ruby>にいい<ruby>試合<rt>しあい</rt></ruby>だったね！",
+        aen:"Yes! It was amazing! It was really a great game!"
+      },
+    ]
+  },
+  {
+    id: 22,
+    label: "Vol 8",
+    words: [
+      {en:"Memory",jp:"思い出",kana:"おもいで"},
+      {en:"Equipment / Tool",jp:"道具",kana:"どうぐ"},
+      {en:"To be similar",jp:"似ている",kana:"にている"},
+      {en:"Sound",jp:"音",kana:"おと"},
+      {en:"To edit",jp:"編集する",kana:"へんしゅうする"},
+      {en:"Troublesome / Annoying",jp:"面倒くさい",kana:"めんどうくさい"},
+      {en:"Easy (in terms of effort and strain)",jp:"楽",kana:"らく"},
+      {en:"Leather",jp:"革",kana:"かわ"},
+      {en:"In detail",jp:"詳しく",kana:"くわしく"},
+      {en:"To dance",jp:"踊る",kana:"おどる"},
+      {en:"To change",jp:"変わる",kana:"かわる"},
+      {en:"To be moved",jp:"感動する",kana:"かんどうする"},
+      {en:"Dirty",jp:"汚い",kana:"きたない"},
+      {en:"View",jp:"景色",kana:"けしき"},
+      {en:"Heavy",jp:"重い",kana:"おもい"},
+      {en:"Else",jp:"他に",kana:"ほかに"},
+      {en:"Grandfather",jp:"祖父",kana:"そふ"},
+      {en:"To pass away",jp:"亡くなる",kana:"なくなる"},
+      {en:"To fix",jp:"直す",kana:"なおす"},
+    ]
+  },
+  {
+    id: 23,
+    label: "Vol 8",
+    sentenceSet: true,
+    words: [
+      {en:"Please tell me about your childhood memories.",jp:"子供の時の思い出を教えてください。",vocab:"思い出",furigana:"<ruby>子供<rt>こども</rt></ruby>の<ruby>時<rt>とき</rt></ruby>の<ruby>思<rt>おも</rt></ruby>い<ruby>出<rt>で</rt></ruby>を<ruby>教<rt>おし</rt></ruby>えてください。"},
+      {en:"Playing Game Boy in bed every night is a good memory.",jp:"毎晩ベッドでゲームボーイをしていたのはいい思い出です。",vocab:"思い出",furigana:"<ruby>毎晩<rt>まいばん</rt></ruby>ベッドでゲームボーイをしていたのはいい<ruby>思<rt>おも</rt></ruby>い<ruby>出<rt>で</rt></ruby>です。"},
+      {en:"I want to work using good equipment.",jp:"いい道具を使って仕事をしたいです。",vocab:"道具",furigana:"いい<ruby>道具<rt>どうぐ</rt></ruby>を<ruby>使<rt>つか</rt></ruby>って<ruby>仕事<rt>しごと</rt></ruby>をしたいです。"},
+      {en:"Why are you using this tool?",jp:"どうしてこの道具を使っていますか。",vocab:"道具",furigana:"どうしてこの<ruby>道具<rt>どうぐ</rt></ruby>を<ruby>使<rt>つか</rt></ruby>っていますか。"},
+      {en:"I think you look like my father.",jp:"あなたは私の父に似ていると思います。",vocab:"似ている",furigana:"あなたは<ruby>私<rt>わたし</rt></ruby>の<ruby>父<rt>ちち</rt></ruby>に<ruby>似<rt>に</rt></ruby>ていると<ruby>思<rt>おも</rt></ruby>います。"},
+      {en:"This car looks similar to the car my father drives.",jp:"この車は父が運転している車と似ています。",vocab:"似ている",furigana:"この<ruby>車<rt>くるま</rt></ruby>は<ruby>父<rt>ちち</rt></ruby>が<ruby>運転<rt>うんてん</rt></ruby>している<ruby>車<rt>くるま</rt></ruby>と<ruby>似<rt>に</rt></ruby>ています。"},
+      {en:"Can you hear this sound?",jp:"この音が聞こえますか。",vocab:"音",furigana:"この<ruby>音<rt>おと</rt></ruby>が<ruby>聞<rt>き</rt></ruby>こえますか。"},
+      {en:"The sound of the cars is too loud, so I can't sleep.",jp:"車の音がうるさすぎるので、寝られません。",vocab:"音",furigana:"<ruby>車<rt>くるま</rt></ruby>の<ruby>音<rt>おと</rt></ruby>がうるさすぎるので、<ruby>寝<rt>ね</rt></ruby>られません。"},
+      {en:"I like editing videos.",jp:"動画を編集するのが好きです。",vocab:"編集する",furigana:"<ruby>動画<rt>どうが</rt></ruby>を<ruby>編集<rt>へんしゅう</rt></ruby>するのが<ruby>好<rt>す</rt></ruby>きです。"},
+      {en:"I think the new video will take time to edit.",jp:"新しい動画は編集するのに時間がかかると思います。",vocab:"編集する",furigana:"<ruby>新<rt>あたら</rt></ruby>しい<ruby>動画<rt>どうが</rt></ruby>は<ruby>編集<rt>へんしゅう</rt></ruby>するのに<ruby>時間<rt>じかん</rt></ruby>がかかると<ruby>思<rt>おも</rt></ruby>います。"},
+      {en:"I don't want to do troublesome things.",jp:"面倒くさいことはしたくないです。",vocab:"面倒くさい",furigana:"<ruby>面倒<rt>めんどう</rt></ruby>くさいことはしたくないです。"},
+      {en:"I met an annoying person at a bar yesterday.",jp:"昨日バーで面倒くさい人に会いました。",vocab:"面倒くさい",furigana:"<ruby>昨日<rt>きのう</rt></ruby>バーで<ruby>面倒<rt>めんどう</rt></ruby>くさい<ruby>人<rt>ひと</rt></ruby>に<ruby>会<rt>あ</rt></ruby>いました。"},
+      {en:"It's better not to only do easy things every day.",jp:"毎日楽なことをしないほうがいいですよ。",vocab:"楽",furigana:"<ruby>毎日<rt>まいにち</rt></ruby><ruby>楽<rt>らく</rt></ruby>なことをしないほうがいいですよ。"},
+      {en:"I like this job because it's easy.",jp:"この仕事は楽なので、好きです。",vocab:"楽",furigana:"この<ruby>仕事<rt>しごと</rt></ruby>は<ruby>楽<rt>らく</rt></ruby>なので、<ruby>好<rt>す</rt></ruby>きです。"},
+      {en:"I want to buy a leather wallet made from cowhide.",jp:"牛の革の財布を買いたいです。",vocab:"革",furigana:"<ruby>牛<rt>うし</rt></ruby>の<ruby>革<rt>かわ</rt></ruby>の<ruby>財布<rt>さいふ</rt></ruby>を<ruby>買<rt>か</rt></ruby>いたいです。"},
+      {en:"My friend always wears a leather jacket.",jp:"私の友達はいつも革のジャケットを着ています。",vocab:"革",furigana:"<ruby>私<rt>わたし</rt></ruby>の<ruby>友達<rt>ともだち</rt></ruby>はいつも<ruby>革<rt>かわ</rt></ruby>のジャケットを<ruby>着<rt>き</rt></ruby>ています。"},
+      {en:"I want to hear more details about that story.",jp:"もっと詳しくその話を聞きたいです。",vocab:"詳しく",furigana:"もっと<ruby>詳<rt>くわ</rt></ruby>しくその<ruby>話<rt>はなし</rt></ruby>を<ruby>聞<rt>き</rt></ruby>きたいです。"},
+      {en:"Let's talk about it in more detail later.",jp:"あとで、それについて詳しく話しましょう。",vocab:"詳しく",furigana:"あとで、それについて<ruby>詳<rt>くわ</rt></ruby>しく<ruby>話<rt>はな</rt></ruby>しましょう。"},
+      {en:"She was dancing until morning yesterday.",jp:"昨日、彼女は朝まで踊っていました。",vocab:"踊る",furigana:"<ruby>昨日<rt>きのう</rt></ruby>、<ruby>彼女<rt>かのじょ</rt></ruby>は<ruby>朝<rt>あさ</rt></ruby>まで<ruby>踊<rt>おど</rt></ruby>っていました。"},
+      {en:"I'm not good at dancing, so I didn't dance.",jp:"私は踊るのが上手じゃないので、踊りませんでした。",vocab:"踊る",furigana:"<ruby>私<rt>わたし</rt></ruby>は<ruby>踊<rt>おど</rt></ruby>るのが<ruby>上手<rt>じょうず</rt></ruby>じゃないので、<ruby>踊<rt>おど</rt></ruby>りませんでした。"},
+      {en:"He hasn't changed since he was a child.",jp:"彼は子供の時から変わっていません。",vocab:"変わる",furigana:"<ruby>彼<rt>かれ</rt></ruby>は<ruby>子供<rt>こども</rt></ruby>の<ruby>時<rt>とき</rt></ruby>から<ruby>変<rt>か</rt></ruby>わっていません。"},
+      {en:"This town has really changed recently.",jp:"この街は最近、本当に変わりました。",vocab:"変わる",furigana:"この<ruby>街<rt>まち</rt></ruby>は<ruby>最近<rt>さいきん</rt></ruby>、<ruby>本当<rt>ほんとう</rt></ruby>に<ruby>変<rt>か</rt></ruby>わりました。"},
+      {en:"I was really moved when I heard my husband's speech.",jp:"夫のスピーチを聞いて、本当に感動しました。",vocab:"感動する",furigana:"<ruby>夫<rt>おっと</rt></ruby>のスピーチを<ruby>聞<rt>き</rt></ruby>いて、<ruby>本当<rt>ほんとう</rt></ruby>に<ruby>感動<rt>かんどう</rt></ruby>しました。"},
+      {en:"This is the movie that moved my friend.",jp:"これは友達が感動した映画です。",vocab:"感動する",furigana:"これは<ruby>友達<rt>ともだち</rt></ruby>が<ruby>感動<rt>かんどう</rt></ruby>した<ruby>映画<rt>えいが</rt></ruby>です。"},
+      {en:"I think the air in this city is dirty.",jp:"この街の空気は汚いと思います。",vocab:"汚い",furigana:"この<ruby>街<rt>まち</rt></ruby>の<ruby>空気<rt>くうき</rt></ruby>は<ruby>汚<rt>きたな</rt></ruby>いと<ruby>思<rt>おも</rt></ruby>います。"},
+      {en:"My room is dirty, so I have to clean it today.",jp:"私の部屋は汚いので、今日、掃除しなければいけません。",vocab:"汚い",furigana:"<ruby>私<rt>わたし</rt></ruby>の<ruby>部屋<rt>へや</rt></ruby>は<ruby>汚<rt>きたな</rt></ruby>いので、<ruby>今日<rt>きょう</rt></ruby>、<ruby>掃除<rt>そうじ</rt></ruby>しなければいけません。"},
+      {en:"I'm glad I could see this view with my wife.",jp:"妻とこの景色を見ることができてよかったです。",vocab:"景色",furigana:"<ruby>妻<rt>つま</rt></ruby>とこの<ruby>景色<rt>けしき</rt></ruby>を<ruby>見<rt>み</rt></ruby>ることができてよかったです。"},
+      {en:"The view I saw with my friend yesterday was very beautiful and moving.",jp:"昨日友達と見た景色はとてもきれいで感動しました。",vocab:"景色",furigana:"<ruby>昨日<rt>きのう</rt></ruby><ruby>友達<rt>ともだち</rt></ruby>と<ruby>見<rt>み</rt></ruby>た<ruby>景色<rt>けしき</rt></ruby>はとてもきれいで<ruby>感動<rt>かんどう</rt></ruby>しました。"},
+      {en:"I had to go back to get my heavy luggage.",jp:"重い荷物を取りに帰らなければいけませんでした。",vocab:"重い",furigana:"<ruby>重<rt>おも</rt></ruby>い<ruby>荷物<rt>にもつ</rt></ruby>を<ruby>取<rt>と</rt></ruby>りに<ruby>帰<rt>かえ</rt></ruby>らなければいけませんでした。"},
+      {en:"Please don't put heavy things here.",jp:"ここに重い物を置かないでください。",vocab:"重い",furigana:"ここに<ruby>重<rt>おも</rt></ruby>い<ruby>物<rt>もの</rt></ruby>を<ruby>置<rt>お</rt></ruby>かないでください。"},
+      {en:"Is there anything else you want?",jp:"他に何か欲しい物がありますか。",vocab:"他に",furigana:"<ruby>他<rt>ほか</rt></ruby>に<ruby>何<rt>なに</rt></ruby>か<ruby>欲<rt>ほ</rt></ruby>しい<ruby>物<rt>もの</rt></ruby>がありますか。"},
+      {en:"Who else is coming today?",jp:"今日は他に誰が来ますか。",vocab:"他に",furigana:"<ruby>今日<rt>きょう</rt></ruby>は<ruby>他<rt>ほか</rt></ruby>に<ruby>誰<rt>だれ</rt></ruby>が<ruby>来<rt>き</rt></ruby>ますか。"},
+      {en:"This is the car I got from my grandfather.",jp:"これは祖父からもらった車です。",vocab:"祖父",furigana:"これは<ruby>祖父<rt>そふ</rt></ruby>からもらった<ruby>車<rt>くるま</rt></ruby>です。"},
+      {en:"My grandfather said he has to go to the hospital tomorrow.",jp:"祖父は明日病院にいかなきゃいけないと言っていました。",vocab:"祖父",furigana:"<ruby>祖父<rt>そふ</rt></ruby>は<ruby>明日<rt>あした</rt></ruby><ruby>病院<rt>びょういん</rt></ruby>にいかなきゃいけないと<ruby>言<rt>い</rt></ruby>っていました。"},
+      {en:"My dog passed away from illness the day before yesterday.",jp:"一昨日、私の犬は病気で亡くなりました。",vocab:"亡くなる",furigana:"<ruby>一昨日<rt>おととい</rt></ruby>、<ruby>私<rt>わたし</rt></ruby>の<ruby>犬<rt>いぬ</rt></ruby>は<ruby>病気<rt>びょうき</rt></ruby>で<ruby>亡<rt>な</rt></ruby>くなりました。"},
+      {en:"My friend's grandmother passed away yesterday at the age of 90.",jp:"友達のおばあさんは昨日、９０歳で亡くなりました。",vocab:"亡くなる",furigana:"<ruby>友達<rt>ともだち</rt></ruby>のおばあさんは<ruby>昨日<rt>きのう</rt></ruby>、<ruby>９０歳<rt>きゅうじゅっさい</rt></ruby>で<ruby>亡<rt>な</rt></ruby>くなりました。"},
+      {en:"I fixed a broken computer yesterday.",jp:"昨日、壊れているパソコンを直しました。",vocab:"直す",furigana:"<ruby>昨日<rt>きのう</rt></ruby>、<ruby>壊<rt>こわ</rt></ruby>れているパソコンを<ruby>直<rt>なお</rt></ruby>しました。"},
+      {en:"Let's fix that bicycle tomorrow.",jp:"明日、その自転車を直しましょう。",vocab:"直す",furigana:"<ruby>明日<rt>あした</rt></ruby>、その<ruby>自転車<rt>じてんしゃ</rt></ruby>を<ruby>直<rt>なお</rt></ruby>しましょう。"},
+    ]
+  },
+  {
+    id: 24,
+    label: "Vol 8",
+    qaSet: true,
+    words: [
+      {
+        q:"この財布はきれいですね。",
+        qf:"この<ruby>財布<rt>さいふ</rt></ruby>はきれいですね。",
+        qen:"This wallet is nice.",
+        a:"これは付き合っていた時に妻が私にくれた財布です。",
+        af:"これは<ruby>付<rt>つ</rt></ruby>き<ruby>合<rt>あ</rt></ruby>っていた<ruby>時<rt>とき</rt></ruby>に<ruby>妻<rt>つま</rt></ruby>が<ruby>私<rt>わたし</rt></ruby>にくれた<ruby>財布<rt>さいふ</rt></ruby>です。",
+        aen:"This is the wallet my wife gave me when we were dating."
+      },
+      {
+        q:"あなたが一番大切な物はなんですか。",
+        qf:"あなたが<ruby>一番<rt>いちばん</rt></ruby><ruby>大切<rt>たいせつ</rt></ruby>な<ruby>物<rt>もの</rt></ruby>はなんですか。",
+        qen:"What is the most important thing to you?",
+        a:"父が使っていたネクタイが一番大切です。",
+        af:"<ruby>父<rt>ちち</rt></ruby>が<ruby>使<rt>つか</rt></ruby>っていたネクタイが<ruby>一番<rt>いちばん</rt></ruby><ruby>大切<rt>たいせつ</rt></ruby>です。",
+        aen:"The tie my father used to wear is the most important to me."
+      },
+      {
+        q:"子供の時の思い出の物がありますか。",
+        qf:"<ruby>子供<rt>こども</rt></ruby>の<ruby>時<rt>とき</rt></ruby>の<ruby>思<rt>おも</rt></ruby>い<ruby>出<rt>で</rt></ruby>の<ruby>物<rt>もの</rt></ruby>がありますか。",
+        qen:"Do you have something from your childhood?",
+        a:"はい。子供の時から使っているかばんです。実は、今もときどき使っています。",
+        af:"はい。<ruby>子供<rt>こども</rt></ruby>の<ruby>時<rt>とき</rt></ruby>から<ruby>使<rt>つか</rt></ruby>っているかばんです。<ruby>実<rt>じつ</rt></ruby>は、<ruby>今<rt>いま</rt></ruby>もときどき<ruby>使<rt>つか</rt></ruby>っています。",
+        aen:"Yes. It's a bag I've used since I was a child. I still use it sometimes."
+      },
+      {
+        q:"あなたがいつも使っている時計はかっこいいですね。",
+        qf:"あなたがいつも<ruby>使<rt>つか</rt></ruby>っている<ruby>時計<rt>とけい</rt></ruby>はかっこいいですね。",
+        qen:"The watch you always wear is cool.",
+        a:"これはイタリアに行った時、イタリア人の友達からもらった時計です。",
+        af:"これはイタリアに<ruby>行<rt>い</rt></ruby>った<ruby>時<rt>とき</rt></ruby>、イタリア<ruby>人<rt>じん</rt></ruby>の<ruby>友達<rt>ともだち</rt></ruby>からもらった<ruby>時計<rt>とけい</rt></ruby>です。",
+        aen:"I got this watch from my Italian friend when I went to Italy."
+      },
+      {
+        q:"子供の時の宝物は何でしたか。",
+        qf:"<ruby>子供<rt>こども</rt></ruby>の<ruby>時<rt>とき</rt></ruby>の<ruby>宝物<rt>たからもの</rt></ruby>は<ruby>何<rt>なん</rt></ruby>でしたか。",
+        qen:"What was your treasure when you were a child?",
+        a:"子供の時は遊戯王カードが大好きだったので、遊戯王カードは一番大切な物でした。",
+        af:"<ruby>子供<rt>こども</rt></ruby>の<ruby>時<rt>とき</rt></ruby>は<ruby>遊戯王<rt>ゆうぎおう</rt></ruby>カードが<ruby>大好<rt>だいす</rt></ruby>きだったので、<ruby>遊戯王<rt>ゆうぎおう</rt></ruby>カードは<ruby>一番<rt>いちばん</rt></ruby><ruby>大切<rt>たいせつ</rt></ruby>な<ruby>物<rt>もの</rt></ruby>でした。",
+        aen:"I loved Yu-Gi-Oh! cards, so they were my most important thing."
+      },
+      {
+        q:"どうして、その車を買いましたか。",
+        qf:"どうして、その<ruby>車<rt>くるま</rt></ruby>を<ruby>買<rt>か</rt></ruby>いましたか。",
+        qen:"Why did you buy that car?",
+        a:"私はキャンプやスキーによく行くので、大きくて強い車を買いました。",
+        af:"<ruby>私<rt>わたし</rt></ruby>はキャンプやスキーによく<ruby>行<rt>い</rt></ruby>くので、<ruby>大<rt>おお</rt></ruby>きくて<ruby>強<rt>つよ</rt></ruby>い<ruby>車<rt>くるま</rt></ruby>を<ruby>買<rt>か</rt></ruby>いました。",
+        aen:"I often go camping and skiing, so I bought a big, strong car."
+      },
+      {
+        q:"何を買う時に幸せを感じますか。",
+        qf:"<ruby>何<rt>なに</rt></ruby>を<ruby>買<rt>か</rt></ruby>う<ruby>時<rt>とき</rt></ruby>に<ruby>幸<rt>しあわ</rt></ruby>せを<ruby>感<rt>かん</rt></ruby>じますか。",
+        qen:"When do you feel happy buying something?",
+        a:"いつも新しいカメラを買う時に幸せな気持ちになります。新しいカメラはかっこよくて、きれいだと思います。",
+        af:"いつも<ruby>新<rt>あたら</rt></ruby>しいカメラを<ruby>買<rt>か</rt></ruby>う<ruby>時<rt>とき</rt></ruby>に<ruby>幸<rt>しあわ</rt></ruby>せな<ruby>気持<rt>きも</rt></ruby>ちになります。<ruby>新<rt>あたら</rt></ruby>しいカメラはかっこよくて、きれいだと<ruby>思<rt>おも</rt></ruby>います。",
+        aen:"I feel happy when I buy a new camera. I think new cameras are cool and beautiful."
+      },
+      {
+        q:"どうしてその服を買いましたか。",
+        qf:"どうしてその<ruby>服<rt>ふく</rt></ruby>を<ruby>買<rt>か</rt></ruby>いましたか。",
+        qen:"Why did you buy those clothes?",
+        a:"この色は私が好きな色だし、快適だし、暖かいからこの服を買いました。",
+        af:"この<ruby>色<rt>いろ</rt></ruby>は<ruby>私<rt>わたし</rt></ruby>が<ruby>好<rt>す</rt></ruby>きな<ruby>色<rt>いろ</rt></ruby>だし、<ruby>快適<rt>かいてき</rt></ruby>だし、<ruby>暖<rt>あたた</rt></ruby>かいからこの<ruby>服<rt>ふく</rt></ruby>を<ruby>買<rt>か</rt></ruby>いました。",
+        aen:"I bought them because I like the color, and they are comfortable and warm."
+      },
+      {
+        q:"次の誕生日に何がほしいですか。",
+        qf:"<ruby>次<rt>つぎ</rt></ruby>の<ruby>誕生日<rt>たんじょうび</rt></ruby>に<ruby>何<rt>なに</rt></ruby>がほしいですか。",
+        qen:"What do you want for your next birthday?",
+        a:"次の誕生日に新しいスキーが欲しいです。来年、北海道に行くので、パウダースノーのスキーが欲しいです。",
+        af:"<ruby>次<rt>つぎ</rt></ruby>の<ruby>誕生日<rt>たんじょうび</rt></ruby>に<ruby>新<rt>あたら</rt></ruby>しいスキーが<ruby>欲<rt>ほ</rt></ruby>しいです。<ruby>来年<rt>らいねん</rt></ruby>、<ruby>北海道<rt>ほっかいどう</rt></ruby>に<ruby>行<rt>い</rt></ruby>くので、パウダースノーのスキーが<ruby>欲<rt>ほ</rt></ruby>しいです。",
+        aen:"I want new skis. I'm going to Hokkaido next year, so I want skis for powder snow."
+      },
+      {
+        q:"本当にお金持ちだったら、何を買いたいですか。",
+        qf:"<ruby>本当<rt>ほんとう</rt></ruby>にお<ruby>金持<rt>かねも</rt></ruby>ちだったら、<ruby>何<rt>なに</rt></ruby>を<ruby>買<rt>か</rt></ruby>いたいですか。",
+        qen:"If you were really rich, what would you buy?",
+        a:"大きいキャンピングカーを買って、世界中を旅行したいです。",
+        af:"<ruby>大<rt>おお</rt></ruby>きいキャンピングカーを<ruby>買<rt>か</rt></ruby>って、<ruby>世界中<rt>せかいじゅう</rt></ruby>を<ruby>旅行<rt>りょこう</rt></ruby>したいです。",
+        aen:"I would buy a big camper van and travel around the world."
+      },
+    ]
+  },
+  {
+    id: 25,
+    label: "Vol 9",
+    words: [
+      {en:"Consultation / Advice",jp:"相談",kana:"そうだん"},
+      {en:"For a long time",jp:"ずっと",kana:""},
+      {en:"To worry / To be indecisive",jp:"悩む",kana:"なやむ"},
+      {en:"To quit",jp:"辞める",kana:"やめる"},
+      {en:"Light",jp:"光",kana:"ひかり"},
+      {en:"Worries",jp:"悩み",kana:"なやみ"},
+      {en:"To lose weight",jp:"痩せる",kana:"やせる"},
+      {en:"To gain weight",jp:"太る",kana:"ふとる"},
+      {en:"To go for a walk",jp:"散歩する",kana:"さんぽする"},
+      {en:"To be similar",jp:"似ている",kana:"にている"},
+      {en:"Meditation",jp:"瞑想",kana:"めいそう"},
+      {en:"To clean",jp:"掃除する",kana:"そうじする"},
+      {en:"Body",jp:"体",kana:"からだ"},
+      {en:"Voice",jp:"声",kana:"こえ"},
+      {en:"To marry",jp:"結婚する",kana:"けっこんする"},
+    ]
+  },
+  {
+    id: 26,
+    label: "Vol 9",
+    sentenceSet: true,
+    words: [
+      {en:"I have something I want to consult my parents about.",jp:"両親に相談したいことがあります。",vocab:"相談",furigana:"<ruby>両親<rt>りょうしん</rt></ruby>に<ruby>相談<rt>そうだん</rt></ruby>したいことがあります。"},
+      {en:"When I was a child, I always wanted to talk to my friends about my problems.",jp:"子供の時、いつも友達に相談したかったです。",vocab:"相談",furigana:"<ruby>子供<rt>こども</rt></ruby>の<ruby>時<rt>とき</rt></ruby>、いつも<ruby>友達<rt>ともだち</rt></ruby>に<ruby>相談<rt>そうだん</rt></ruby>したかったです。"},
+      {en:"I have wanted to come to Japan since I was a child.",jp:"子供の時からずっと日本に来たかったです。",vocab:"ずっと",furigana:"<ruby>子供<rt>こども</rt></ruby>の<ruby>時<rt>とき</rt></ruby>からずっと<ruby>日本<rt>にほん</rt></ruby>に<ruby>来<rt>き</rt></ruby>たかったです。"},
+      {en:"I have been playing tennis for a long time, but I am not getting much better.",jp:"ずっとテニスをしていますが、あまり上手になりません。",vocab:"ずっと",furigana:"ずっとテニスをしていますが、あまり<ruby>上手<rt>じょうず</rt></ruby>になりません。"},
+      {en:"You shouldn't worry alone!",jp:"一人で悩まないほうがいいですよ！",vocab:"悩む",furigana:"<ruby>一人<rt>ひとり</rt></ruby>で<ruby>悩<rt>なや</rt></ruby>まないほうがいいですよ！"},
+      {en:"Please don't worry too much by yourself.",jp:"一人で悩みすぎないでください。",vocab:"悩む",furigana:"<ruby>一人<rt>ひとり</rt></ruby>で<ruby>悩<rt>なや</rt></ruby>みすぎないでください。"},
+      {en:"You should quit that job.",jp:"その仕事を辞めたほうがいいですよ。",vocab:"辞める",furigana:"その<ruby>仕事<rt>しごと</rt></ruby>を<ruby>辞<rt>や</rt></ruby>めたほうがいいですよ。"},
+      {en:"The doctor said that I must not stop taking the medicine.",jp:"医者は薬を飲むのを辞めてはいけないと言っていました。",vocab:"辞める",furigana:"<ruby>医者<rt>いしゃ</rt></ruby>は<ruby>薬<rt>くすり</rt></ruby>を<ruby>飲<rt>の</rt></ruby>むのを<ruby>辞<rt>や</rt></ruby>めてはいけないと<ruby>言<rt>い</rt></ruby>っていました。"},
+      {en:"The light is too strong.",jp:"光が強すぎます。",vocab:"光",furigana:"<ruby>光<rt>ひかり</rt></ruby>が<ruby>強<rt>つよ</rt></ruby>すぎます。"},
+      {en:"When the sunlight is strong, I wear sunglasses.",jp:"太陽の光が強い時、サングラスをかけます。",vocab:"光",furigana:"<ruby>太陽<rt>たいよう</rt></ruby>の<ruby>光<rt>ひかり</rt></ruby>が<ruby>強<rt>つよ</rt></ruby>い<ruby>時<rt>とき</rt></ruby>、サングラスをかけます。"},
+      {en:"I have a lot of worries.",jp:"私は悩みがたくさんあります。",vocab:"悩み",furigana:"<ruby>私<rt>わたし</rt></ruby>は<ruby>悩<rt>なや</rt></ruby>みがたくさんあります。"},
+      {en:"I don't think there is anyone who has no worries.",jp:"悩みがない人はいないと思います。",vocab:"悩み",furigana:"<ruby>悩<rt>なや</rt></ruby>みがない<ruby>人<rt>ひと</rt></ruby>はいないと<ruby>思<rt>おも</rt></ruby>います。"},
+      {en:"I want to lose weight, but I think losing too much weight is not good.",jp:"痩せたいけど、痩せすぎるのはよくないと思います。",vocab:"痩せる",furigana:"<ruby>痩<rt>や</rt></ruby>せたいけど、<ruby>痩<rt>や</rt></ruby>せすぎるのはよくないと<ruby>思<rt>おも</rt></ruby>います。"},
+      {en:"Why are there so many skinny people in Japan?",jp:"どうして日本にたくさん痩せている人がいますか。",vocab:"痩せる",furigana:"どうして<ruby>日本<rt>にほん</rt></ruby>にたくさん<ruby>痩<rt>や</rt></ruby>せている<ruby>人<rt>ひと</rt></ruby>がいますか。"},
+      {en:"I didn't want to gain weight before the wedding.",jp:"結婚式の前に太りたくなかったです。",vocab:"太る",furigana:"<ruby>結婚式<rt>けっこんしき</rt></ruby>の<ruby>前<rt>まえ</rt></ruby>に<ruby>太<rt>ふと</rt></ruby>りたくなかったです。"},
+      {en:"Since I'm too skinny now, I want to gain a little weight.",jp:"今痩せすぎているから、少し太りたいです。",vocab:"太る",furigana:"<ruby>今<rt>いま</rt></ruby><ruby>痩<rt>や</rt></ruby>せすぎているから、<ruby>少<rt>すこ</rt></ruby>し<ruby>太<rt>ふと</rt></ruby>りたいです。"},
+      {en:"It feels good to go for a walk on a sunny day.",jp:"晴れの日に散歩するのは気持ちがいいです。",vocab:"散歩する",furigana:"<ruby>晴<rt>は</rt></ruby>れの<ruby>日<rt>ひ</rt></ruby>に<ruby>散歩<rt>さんぽ</rt></ruby>するのは<ruby>気持<rt>きも</rt></ruby>ちがいいです。"},
+      {en:"When you're sad, you should go for a walk.",jp:"悲しい時は散歩したほうがいいですよ。",vocab:"散歩する",furigana:"<ruby>悲<rt>かな</rt></ruby>しい<ruby>時<rt>とき</rt></ruby>は<ruby>散歩<rt>さんぽ</rt></ruby>したほうがいいですよ。"},
+      {en:"I found someone who looks like my father.",jp:"父に似ている人を見つけました。",vocab:"似ている",furigana:"<ruby>父<rt>ちち</rt></ruby>に<ruby>似<rt>に</rt></ruby>ている<ruby>人<rt>ひと</rt></ruby>を<ruby>見<rt>み</rt></ruby>つけました。"},
+      {en:"This bag is similar to mine.",jp:"このかばんは私のに似ています。",vocab:"似ている",furigana:"このかばんは<ruby>私<rt>わたし</rt></ruby>のに<ruby>似<rt>に</rt></ruby>ています。"},
+      {en:"My friend said that it's better to meditate every morning.",jp:"友達は毎朝瞑想したほうがいいと言っていました。",vocab:"瞑想",furigana:"<ruby>友達<rt>ともだち</rt></ruby>は<ruby>毎朝<rt>まいあさ</rt></ruby><ruby>瞑想<rt>めいそう</rt></ruby>したほうがいいと<ruby>言<rt>い</rt></ruby>っていました。"},
+      {en:"Is it okay if I meditate now?",jp:"今から、瞑想してもいいですか。",vocab:"瞑想",furigana:"<ruby>今<rt>いま</rt></ruby>から、<ruby>瞑想<rt>めいそう</rt></ruby>してもいいですか。"},
+      {en:"Every morning, I eat breakfast, drink coffee, and clean my room.",jp:"毎朝、朝ごはんを食べて、コーヒーを飲んで、部屋を掃除します。",vocab:"掃除する",furigana:"<ruby>毎朝<rt>まいあさ</rt></ruby>、<ruby>朝<rt>あさ</rt></ruby>ごはんを<ruby>食<rt>た</rt></ruby>べて、コーヒーを<ruby>飲<rt>の</rt></ruby>んで、<ruby>部屋<rt>へや</rt></ruby>を<ruby>掃除<rt>そうじ</rt></ruby>します。"},
+      {en:"Since my parents are coming to my house this weekend, I have to clean.",jp:"今週末、両親が家に来るので掃除しなきゃいけません。",vocab:"掃除する",furigana:"<ruby>今週末<rt>こんしゅうまつ</rt></ruby>、<ruby>両親<rt>りょうしん</rt></ruby>が<ruby>家<rt>いえ</rt></ruby>に<ruby>来<rt>く</rt></ruby>るので<ruby>掃除<rt>そうじ</rt></ruby>しなきゃいけません。"},
+      {en:"My body isn't tired, but my head is tired.",jp:"体は疲れていないけど、頭が疲れています。",vocab:"体",furigana:"<ruby>体<rt>からだ</rt></ruby>は<ruby>疲<rt>つか</rt></ruby>れていないけど、<ruby>頭<rt>あたま</rt></ruby>が<ruby>疲<rt>つか</rt></ruby>れています。"},
+      {en:"Since I skied all day yesterday, my body is tired.",jp:"昨日一日中スキーをしたので、体が疲れています。",vocab:"体",furigana:"<ruby>昨日<rt>きのう</rt></ruby><ruby>一日中<rt>いちにちじゅう</rt></ruby>スキーをしたので、<ruby>体<rt>からだ</rt></ruby>が<ruby>疲<rt>つか</rt></ruby>れています。"},
+      {en:"You shouldn't speak in a loud voice on the train.",jp:"電車の中で大きい声で話さないほうがいいですよ。",vocab:"声",furigana:"<ruby>電車<rt>でんしゃ</rt></ruby>の<ruby>中<rt>なか</rt></ruby>で<ruby>大<rt>おお</rt></ruby>きい<ruby>声<rt>こえ</rt></ruby>で<ruby>話<rt>はな</rt></ruby>さないほうがいいですよ。"},
+      {en:"Since I have a cold now, I can't speak.",jp:"今は風邪なので、声が出ません。",vocab:"声",furigana:"<ruby>今<rt>いま</rt></ruby>は<ruby>風邪<rt>かぜ</rt></ruby>なので、<ruby>声<rt>こえ</rt></ruby>が<ruby>出<rt>で</rt></ruby>ません。"},
+      {en:"I was able to marry the person I love.",jp:"大好きな人と結婚することができました。",vocab:"結婚する",furigana:"<ruby>大好<rt>だいす</rt></ruby>きな<ruby>人<rt>ひと</rt></ruby>と<ruby>結婚<rt>けっこん</rt></ruby>することができました。"},
+      {en:"Please marry me.",jp:"私と結婚してください。",vocab:"結婚する",furigana:"<ruby>私<rt>わたし</rt></ruby>と<ruby>結婚<rt>けっこん</rt></ruby>してください。"},
+    ]
+  },
+  {
+    id: 27,
+    label: "Vol 9",
+    qaSet: true,
+    words: [
+      {
+        q:"友達と喧嘩した時、何をしたほうがいいと思いますか。",
+        qf:"<ruby>友達<rt>ともだち</rt></ruby>と<ruby>喧嘩<rt>けんか</rt></ruby>した<ruby>時<rt>とき</rt></ruby>、<ruby>何<rt>なに</rt></ruby>をしたほうがいいと<ruby>思<rt>おも</rt></ruby>いますか。",
+        qen:"When you fight with a friend, what do you think you should do?",
+        a:"友達に謝った方がいいですよ。",
+        af:"<ruby>友達<rt>ともだち</rt></ruby>に<ruby>謝<rt>あやま</rt></ruby>った<ruby>方<rt>ほう</rt></ruby>がいいですよ。",
+        aen:"You should apologize to your friend."
+      },
+      {
+        q:"よく大学に遅刻するんです。",
+        qf:"よく<ruby>大学<rt>だいがく</rt></ruby>に<ruby>遅刻<rt>ちこく</rt></ruby>するんです。",
+        qen:"I'm often late for university.",
+        a:"そうですか。毎朝出かける2時間前に起きたほうがいいですよ。あと、遅くまでゲームをしないほうがいいですよ。",
+        af:"そうですか。<ruby>毎朝<rt>まいあさ</rt></ruby><ruby>出<rt>で</rt></ruby>かける<ruby>2時間<rt>にじかん</rt></ruby><ruby>前<rt>まえ</rt></ruby>に<ruby>起<rt>お</rt></ruby>きたほうがいいですよ。あと、<ruby>遅<rt>おそ</rt></ruby>くまでゲームをしないほうがいいですよ。",
+        aen:"I see. You should wake up two hours before you leave every morning. Also, you shouldn't play games until late at night."
+      },
+      {
+        q:"将来したいことが分からないんです。",
+        qf:"<ruby>将来<rt>しょうらい</rt></ruby>したいことが<ruby>分<rt>わ</rt></ruby>からないんです。",
+        qen:"I don't know what I want to do in the future.",
+        a:"そうですか。今、楽しいと思うことをたくさんしたほうがいいですよ。",
+        af:"そうですか。<ruby>今<rt>いま</rt></ruby>、<ruby>楽<rt>たの</rt></ruby>しいと<ruby>思<rt>おも</rt></ruby>うことをたくさんしたほうがいいですよ。",
+        aen:"I see. You should do many things that you think are fun right now."
+      },
+      {
+        q:"学生の自分に何を言いたいですか。",
+        qf:"<ruby>学生<rt>がくせい</rt></ruby>の<ruby>自分<rt>じぶん</rt></ruby>に<ruby>何<rt>なに</rt></ruby>を<ruby>言<rt>い</rt></ruby>いたいですか。",
+        qen:"What would you like to say to your student self?",
+        a:"もっと遊んだほうがいいと言いたいです。あと、他の人の意見を気にしないほうがいいと言いたいです。",
+        af:"もっと<ruby>遊<rt>あそ</rt></ruby>んだほうがいいと<ruby>言<rt>い</rt></ruby>いたいです。あと、<ruby>他<rt>ほか</rt></ruby>の<ruby>人<rt>ひと</rt></ruby>の<ruby>意見<rt>いけん</rt></ruby>を<ruby>気<rt>き</rt></ruby>にしないほうがいいと<ruby>言<rt>い</rt></ruby>いたいです。",
+        aen:"I would say that you should play more. Also, I would say that you shouldn't care about other people's opinions."
+      },
+      {
+        q:"よく誰に相談しますか。",
+        qf:"よく<ruby>誰<rt>だれ</rt></ruby>に<ruby>相談<rt>そうだん</rt></ruby>しますか。",
+        qen:"Who do you usually consult?",
+        a:"相談によります。仕事の相談は、同僚にします。でも人生の相談は私が尊敬している人にします。",
+        af:"<ruby>相談<rt>そうだん</rt></ruby>によります。<ruby>仕事<rt>しごと</rt></ruby>の<ruby>相談<rt>そうだん</rt></ruby>は、<ruby>同僚<rt>どうりょう</rt></ruby>にします。でも<ruby>人生<rt>じんせい</rt></ruby>の<ruby>相談<rt>そうだん</rt></ruby>は<ruby>私<rt>わたし</rt></ruby>が<ruby>尊敬<rt>そんけい</rt></ruby>している<ruby>人<rt>ひと</rt></ruby>にします。",
+        aen:"It depends on the situation. For work-related advice, I talk to my colleagues. But for life advice, I talk to someone I respect."
+      },
+      {
+        q:"最近どんな悩みがありますか。",
+        qf:"<ruby>最近<rt>さいきん</rt></ruby>どんな<ruby>悩<rt>なや</rt></ruby>みがありますか。",
+        qen:"What kind of worries have you had recently?",
+        a:"最近、体のいろいろな場所が痛いです。年をとりました。",
+        af:"<ruby>最近<rt>さいきん</rt></ruby>、<ruby>体<rt>からだ</rt></ruby>のいろいろな<ruby>場所<rt>ばしょ</rt></ruby>が<ruby>痛<rt>いた</rt></ruby>いです。<ruby>年<rt>とし</rt></ruby>をとりました。",
+        aen:"Recently, various parts of my body have been hurting. I've gotten older."
+      },
+      {
+        q:"日本で何をしないほうがいいですか。",
+        qf:"<ruby>日本<rt>にほん</rt></ruby>で<ruby>何<rt>なに</rt></ruby>をしないほうがいいですか。",
+        qen:"What shouldn't you do in Japan?",
+        a:"家の中で靴を履かないほうがいいですよ。",
+        af:"<ruby>家<rt>いえ</rt></ruby>の<ruby>中<rt>なか</rt></ruby>で<ruby>靴<rt>くつ</rt></ruby>を<ruby>履<rt>は</rt></ruby>かないほうがいいですよ。",
+        aen:"You shouldn't wear shoes inside the house."
+      },
+      {
+        q:"日本に行きたいけど、今、仕事がないんです。",
+        qf:"<ruby>日本<rt>にほん</rt></ruby>に<ruby>行<rt>い</rt></ruby>きたいけど、<ruby>今<rt>いま</rt></ruby>、<ruby>仕事<rt>しごと</rt></ruby>がないんです。",
+        qen:"I want to go to Japan, but I don't have a job right now.",
+        a:"まず、仕事をして、貯金したほうがいいですよ。",
+        af:"まず、<ruby>仕事<rt>しごと</rt></ruby>をして、<ruby>貯金<rt>ちょきん</rt></ruby>したほうがいいですよ。",
+        aen:"First, you should work and save money."
+      },
+      {
+        q:"子供の時、どんな悩みがありましたか。",
+        qf:"<ruby>子供<rt>こども</rt></ruby>の<ruby>時<rt>とき</rt></ruby>、どんな<ruby>悩<rt>なや</rt></ruby>みがありましたか。",
+        qen:"What kind of worries did you have when you were a child?",
+        a:"勉強が好きじゃなかったけど、宿題がありすぎて、大変でした。",
+        af:"<ruby>勉強<rt>べんきょう</rt></ruby>が<ruby>好<rt>す</rt></ruby>きじゃなかったけど、<ruby>宿題<rt>しゅくだい</rt></ruby>がありすぎて、<ruby>大変<rt>たいへん</rt></ruby>でした。",
+        aen:"I didn't like studying, but I had too much homework, so it was tough."
+      },
+      {
+        q:"家族とどんな問題がありますか。",
+        qf:"<ruby>家族<rt>かぞく</rt></ruby>とどんな<ruby>問題<rt>もんだい</rt></ruby>がありますか。",
+        qen:"What kind of problems do you have with your family?",
+        a:"高校の時、母と喧嘩して、その時から、あまり話していないんです。",
+        af:"<ruby>高校<rt>こうこう</rt></ruby>の<ruby>時<rt>とき</rt></ruby>、<ruby>母<rt>はは</rt></ruby>と<ruby>喧嘩<rt>けんか</rt></ruby>して、その<ruby>時<rt>とき</rt></ruby>から、あまり<ruby>話<rt>はな</rt></ruby>していないんです。",
+        aen:"When I was in high school, I had a fight with my mother, and since then, we haven't talked much."
+      },
+    ]
+  },
+  {
+    id: 28,
+    label: "Vol 10",
+    words: [
+      {en:"Garden",jp:"庭",kana:"にわ"},
+      {en:"Elderly",jp:"お年寄り",kana:"おとしより"},
+      {en:"Married couple",jp:"夫婦",kana:"ふうふ"},
+      {en:"Fresh",jp:"新鮮",kana:"しんせん"},
+      {en:"Favorite",jp:"お気に入り",kana:"おきにいり"},
+      {en:"Market",jp:"市場",kana:"いちば"},
+      {en:"Smile",jp:"笑顔",kana:"えがお"},
+      {en:"Nice",jp:"素敵",kana:"すてき"},
+      {en:"To find",jp:"見つける",kana:"みつける"},
+      {en:"To be nervous",jp:"緊張する",kana:"きんちょうする"},
+      {en:"Airport",jp:"空港",kana:"くうこう"},
+      {en:"To recall / To remember",jp:"思い出す",kana:"おもいだす"},
+      {en:"International",jp:"国際",kana:"こくさい"},
+      {en:"To relax / To settle down",jp:"落ち着く",kana:"おちつく"},
+      {en:"Both",jp:"両方",kana:"りょうほう"},
+      {en:"Study abroad",jp:"留学",kana:"りゅうがく"},
+      {en:"Overseas",jp:"海外",kana:"かいがい"},
+      {en:"Spacious",jp:"広い",kana:"ひろい"},
+      {en:"Miss",jp:"恋しい",kana:"こいしい"},
+    ]
+  },
+  {
+    id: 29,
+    label: "Vol 10",
+    sentenceSet: true,
+    words: [
+      {en:"I have a small garden at my house.",jp:"私の家に小さい庭があります。",vocab:"庭",furigana:"<ruby>私<rt>わたし</rt></ruby>の<ruby>家<rt>いえ</rt></ruby>に<ruby>小<rt>ちい</rt></ruby>さい<ruby>庭<rt>にわ</rt></ruby>があります。"},
+      {en:"I have to clean up the garden today.",jp:"今日は庭を片付けなくちゃいけません。",vocab:"庭",furigana:"<ruby>今日<rt>きょう</rt></ruby>は<ruby>庭<rt>にわ</rt></ruby>を<ruby>片付<rt>かたづ</rt></ruby>けなくちゃいけません。"},
+      {en:"You should help the elderly.",jp:"お年寄りを手伝ったほうがいいですよ。",vocab:"お年寄り",furigana:"お<ruby>年寄<rt>としよ</rt></ruby>りを<ruby>手伝<rt>てつだ</rt></ruby>ったほうがいいですよ。"},
+      {en:"Two elderly people are sitting on a bench and talking in that park.",jp:"あの公園でお年寄りが二人ベンチに座って話しています。",vocab:"お年寄り",furigana:"あの<ruby>公園<rt>こうえん</rt></ruby>でお<ruby>年寄<rt>としよ</rt></ruby>りが<ruby>二人<rt>ふたり</rt></ruby>ベンチに<ruby>座<rt>すわ</rt></ruby>って<ruby>話<rt>はな</rt></ruby>しています。"},
+      {en:"In the future, I want to become a happy married couple.",jp:"将来、仲がいい夫婦になりたいです。",vocab:"夫婦",furigana:"<ruby>将来<rt>しょうらい</rt></ruby>、<ruby>仲<rt>なか</rt></ruby>がいい<ruby>夫婦<rt>ふうふ</rt></ruby>になりたいです。"},
+      {en:"This weekend, I plan to go out with a couple who are our friends.",jp:"週末は友達の夫婦と一緒に出かけるつもりです。",vocab:"夫婦",furigana:"<ruby>週末<rt>しゅうまつ</rt></ruby>は<ruby>友達<rt>ともだち</rt></ruby>の<ruby>夫婦<rt>ふうふ</rt></ruby>と<ruby>一緒<rt>いっしょ</rt></ruby>に<ruby>出<rt>で</rt></ruby>かけるつもりです。"},
+      {en:"You can eat fresh fish here.",jp:"ここで新鮮な魚を食べることができます。",vocab:"新鮮",furigana:"ここで<ruby>新鮮<rt>しんせん</rt></ruby>な<ruby>魚<rt>さかな</rt></ruby>を<ruby>食<rt>た</rt></ruby>べることができます。"},
+      {en:"The nature is beautiful here and the air is fresh.",jp:"ここは自然がきれいで空気が新鮮です。",vocab:"新鮮",furigana:"ここは<ruby>自然<rt>しぜん</rt></ruby>がきれいで<ruby>空気<rt>くうき</rt></ruby>が<ruby>新鮮<rt>しんせん</rt></ruby>です。"},
+      {en:"I want to go out wearing my favorite jeans.",jp:"お気に入りのジーンズをはいて出かけたいです。",vocab:"お気に入り",furigana:"お<ruby>気<rt>き</rt></ruby>に<ruby>入<rt>い</rt></ruby>りのジーンズをはいて<ruby>出<rt>で</rt></ruby>かけたいです。"},
+      {en:"I like the staff member who works at my favorite cafe.",jp:"お気に入りのカフェで働いている店員さんが好きです。",vocab:"お気に入り",furigana:"お<ruby>気<rt>き</rt></ruby>に<ruby>入<rt>い</rt></ruby>りのカフェで<ruby>働<rt>はたら</rt></ruby>いている<ruby>店員<rt>てんいん</rt></ruby>さんが<ruby>好<rt>す</rt></ruby>きです。"},
+      {en:"Every morning, I go to the market early to buy fresh fish.",jp:"毎朝早く市場に新鮮な魚を買いに行きます。",vocab:"市場",furigana:"<ruby>毎朝<rt>まいあさ</rt></ruby><ruby>早<rt>はや</rt></ruby>く<ruby>市場<rt>いちば</rt></ruby>に<ruby>新鮮<rt>しんせん</rt></ruby>な<ruby>魚<rt>さかな</rt></ruby>を<ruby>買<rt>か</rt></ruby>いに<ruby>行<rt>い</rt></ruby>きます。"},
+      {en:"This market is big and lively.",jp:"この市場は大きくて、にぎやかです。",vocab:"市場",furigana:"この<ruby>市場<rt>いちば</rt></ruby>は<ruby>大<rt>おお</rt></ruby>きくて、にぎやかです。"},
+      {en:"I like people who have a nice smile.",jp:"笑顔が素敵な人が好きです。",vocab:"笑顔",furigana:"<ruby>笑顔<rt>えがお</rt></ruby>が<ruby>素敵<rt>すてき</rt></ruby>な<ruby>人<rt>ひと</rt></ruby>が<ruby>好<rt>す</rt></ruby>きです。"},
+      {en:"He always works with a smile.",jp:"彼はいつも笑顔で仕事をしています。",vocab:"笑顔",furigana:"<ruby>彼<rt>かれ</rt></ruby>はいつも<ruby>笑顔<rt>えがお</rt></ruby>で<ruby>仕事<rt>しごと</rt></ruby>をしています。"},
+      {en:"Yesterday, I was able to meet a nice person.",jp:"昨日素敵な人に会うことができました。",vocab:"素敵",furigana:"<ruby>昨日<rt>きのう</rt></ruby><ruby>素敵<rt>すてき</rt></ruby>な<ruby>人<rt>ひと</rt></ruby>に<ruby>会<rt>あ</rt></ruby>うことができました。"},
+      {en:"In the future, I want to live in a nice house.",jp:"将来素敵な家に住みたいです。",vocab:"素敵",furigana:"<ruby>将来<rt>しょうらい</rt></ruby><ruby>素敵<rt>すてき</rt></ruby>な<ruby>家<rt>いえ</rt></ruby>に<ruby>住<rt>す</rt></ruby>みたいです。"},
+      {en:"I found the restaurant I was looking for.",jp:"探していたレストランを見つけました。",vocab:"見つける",furigana:"<ruby>探<rt>さが</rt></ruby>していたレストランを<ruby>見<rt>み</rt></ruby>つけました。"},
+      {en:"Recently, I found a new hobby.",jp:"最近、新しい趣味を見つけました。",vocab:"見つける",furigana:"<ruby>最近<rt>さいきん</rt></ruby>、<ruby>新<rt>あたら</rt></ruby>しい<ruby>趣味<rt>しゅみ</rt></ruby>を<ruby>見<rt>み</rt></ruby>つけました。"},
+      {en:"I am nervous because I am going to Japan today.",jp:"今日は日本に行くので緊張しています。",vocab:"緊張する",furigana:"<ruby>今日<rt>きょう</rt></ruby>は<ruby>日本<rt>にほん</rt></ruby>に<ruby>行<rt>い</rt></ruby>くので<ruby>緊張<rt>きんちょう</rt></ruby>しています。"},
+      {en:"I was so nervous that I couldn't sleep very well.",jp:"緊張しすぎて、あまり寝られませんでした。",vocab:"緊張する",furigana:"<ruby>緊張<rt>きんちょう</rt></ruby>しすぎて、あまり<ruby>寝<rt>ね</rt></ruby>られませんでした。"},
+      {en:"I like shopping at the airport.",jp:"空港で買い物をするのが好きです。",vocab:"空港",furigana:"<ruby>空港<rt>くうこう</rt></ruby>で<ruby>買<rt>か</rt></ruby>い<ruby>物<rt>もの</rt></ruby>をするのが<ruby>好<rt>す</rt></ruby>きです。"},
+      {en:"You should be at the airport two hours before your flight.",jp:"フライトの２時間前に空港にいた方がいいですよ。",vocab:"空港",furigana:"フライトの<ruby>２時間<rt>にじかん</rt></ruby><ruby>前<rt>まえ</rt></ruby>に<ruby>空港<rt>くうこう</rt></ruby>にいた<ruby>方<rt>ほう</rt></ruby>がいいですよ。"},
+      {en:"I watched an anime and remembered my childhood.",jp:"アニメを見て、子供の時を思い出しました。",vocab:"思い出す",furigana:"アニメを<ruby>見<rt>み</rt></ruby>て、<ruby>子供<rt>こども</rt></ruby>の<ruby>時<rt>とき</rt></ruby>を<ruby>思<rt>おも</rt></ruby>い<ruby>出<rt>だ</rt></ruby>しました。"},
+      {en:"I cannot remember what happened yesterday.",jp:"昨日のことを思い出すことができません。",vocab:"思い出す",furigana:"<ruby>昨日<rt>きのう</rt></ruby>のことを<ruby>思<rt>おも</rt></ruby>い<ruby>出<rt>だ</rt></ruby>すことができません。"},
+      {en:"I arrived at Kansai International Airport this morning.",jp:"今朝、関西国際空港に着きました。",vocab:"国際",furigana:"<ruby>今朝<rt>けさ</rt></ruby>、<ruby>関西国際空港<rt>かんさいこくさいくうこう</rt></ruby>に<ruby>着<rt>つ</rt></ruby>きました。"},
+      {en:"Every morning, I have meetings with international people.",jp:"毎朝、国際的な人と会議があります。",vocab:"国際",furigana:"<ruby>毎朝<rt>まいあさ</rt></ruby>、<ruby>国際的<rt>こくさいてき</rt></ruby>な<ruby>人<rt>ひと</rt></ruby>と<ruby>会議<rt>かいぎ</rt></ruby>があります。"},
+      {en:"When I go home and drink tea, I feel relaxed.",jp:"家に帰って、お茶を飲むと落ち着きます。",vocab:"落ち着く",furigana:"<ruby>家<rt>いえ</rt></ruby>に<ruby>帰<rt>かえ</rt></ruby>って、お<ruby>茶<rt>ちゃ</rt></ruby>を<ruby>飲<rt>の</rt></ruby>むと<ruby>落<rt>お</rt></ruby>ち<ruby>着<rt>つ</rt></ruby>きます。"},
+      {en:"I have traveled a lot, but I plan to settle down in Osaka.",jp:"たくさん旅行したけど、大阪に落ち着くつもりです。",vocab:"落ち着く",furigana:"たくさん<ruby>旅行<rt>りょこう</rt></ruby>したけど、<ruby>大阪<rt>おおさか</rt></ruby>に<ruby>落<rt>お</rt></ruby>ち<ruby>着<rt>つ</rt></ruby>くつもりです。"},
+      {en:"I want to hear both his and her opinions.",jp:"彼と彼女、両方の意見を聞きたいです。",vocab:"両方",furigana:"<ruby>彼<rt>かれ</rt></ruby>と<ruby>彼女<rt>かのじょ</rt></ruby>、<ruby>両方<rt>りょうほう</rt></ruby>の<ruby>意見<rt>いけん</rt></ruby>を<ruby>聞<rt>き</rt></ruby>きたいです。"},
+      {en:"I like both cats and dogs.",jp:"私は猫と犬の両方が好きです。",vocab:"両方",furigana:"<ruby>私<rt>わたし</rt></ruby>は<ruby>猫<rt>ねこ</rt></ruby>と<ruby>犬<rt>いぬ</rt></ruby>の<ruby>両方<rt>りょうほう</rt></ruby>が<ruby>好<rt>す</rt></ruby>きです。"},
+      {en:"I think it's better to study abroad when you are young.",jp:"若い時に留学に行ったほうがいいと思います。",vocab:"留学",furigana:"<ruby>若<rt>わか</rt></ruby>い<ruby>時<rt>とき</rt></ruby>に<ruby>留学<rt>りゅうがく</rt></ruby>に<ruby>行<rt>い</rt></ruby>ったほうがいいと<ruby>思<rt>おも</rt></ruby>います。"},
+      {en:"Studying abroad is fun, but sometimes it is difficult.",jp:"留学は楽しいけど、ときどき大変です。",vocab:"留学",furigana:"<ruby>留学<rt>りゅうがく</rt></ruby>は<ruby>楽<rt>たの</rt></ruby>しいけど、ときどき<ruby>大変<rt>たいへん</rt></ruby>です。"},
+      {en:"Every weekend, I go out with my friends from overseas.",jp:"毎週末、海外の友達と出かけます。",vocab:"海外",furigana:"<ruby>毎週末<rt>まいしゅうまつ</rt></ruby>、<ruby>海外<rt>かいがい</rt></ruby>の<ruby>友達<rt>ともだち</rt></ruby>と<ruby>出<rt>で</rt></ruby>かけます。"},
+      {en:"It is fun to learn about overseas cultures.",jp:"海外の文化を知るのは楽しいです。",vocab:"海外",furigana:"<ruby>海外<rt>かいがい</rt></ruby>の<ruby>文化<rt>ぶんか</rt></ruby>を<ruby>知<rt>し</rt></ruby>るのは<ruby>楽<rt>たの</rt></ruby>しいです。"},
+      {en:"He has a spacious garden at his house.",jp:"彼の家に広い庭があります。",vocab:"広い",furigana:"<ruby>彼<rt>かれ</rt></ruby>の<ruby>家<rt>いえ</rt></ruby>に<ruby>広<rt>ひろ</rt></ruby>い<ruby>庭<rt>にわ</rt></ruby>があります。"},
+      {en:"It is better to drive on wide roads.",jp:"広い道路を運転したほうがいいです。",vocab:"広い",furigana:"<ruby>広<rt>ひろ</rt></ruby>い<ruby>道路<rt>どうろ</rt></ruby>を<ruby>運転<rt>うんてん</rt></ruby>したほうがいいです。"},
+      {en:"I miss Japanese food.",jp:"日本の食べ物が恋しいです。",vocab:"恋しい",furigana:"<ruby>日本<rt>にほん</rt></ruby>の<ruby>食<rt>た</rt></ruby>べ<ruby>物<rt>もの</rt></ruby>が<ruby>恋<rt>こい</rt></ruby>しいです。"},
+      {en:"Sometimes, I miss my family.",jp:"ときどき、家族が恋しくなります。",vocab:"恋しい",furigana:"ときどき、<ruby>家族<rt>かぞく</rt></ruby>が<ruby>恋<rt>こい</rt></ruby>しくなります。"},
+    ]
+  },
+  {
+    id: 30,
+    label: "Vol 10",
+    qaSet: true,
+    words: [
+      {
+        q:"世界でどの街が一番好きですか。",
+        qf:"<ruby>世界<rt>せかい</rt></ruby>でどの<ruby>街<rt>まち</rt></ruby>が<ruby>一番<rt>いちばん</rt></ruby><ruby>好<rt>す</rt></ruby>きですか。",
+        qen:"Which city do you like the most in the world?",
+        a:"街はきれいだし、人は優しいし、きれいな山があるし、バンクーバーが一番好きです。",
+        af:"<ruby>街<rt>まち</rt></ruby>はきれいだし、<ruby>人<rt>ひと</rt></ruby>は<ruby>優<rt>やさ</rt></ruby>しいし、きれいな<ruby>山<rt>やま</rt></ruby>があるし、バンクーバーが<ruby>一番<rt>いちばん</rt></ruby><ruby>好<rt>す</rt></ruby>きです。",
+        aen:"Since the city is beautiful, the people are kind, and there are beautiful mountains, Vancouver is my favorite."
+      },
+      {
+        q:"家の中でどこが一番好きですか。",
+        qf:"<ruby>家<rt>いえ</rt></ruby>の<ruby>中<rt>なか</rt></ruby>でどこが<ruby>一番<rt>いちばん</rt></ruby><ruby>好<rt>す</rt></ruby>きですか。",
+        qen:"Where is your favorite place in your house?",
+        a:"一番リラックスできるので、ベッドの上が一番好きです。",
+        af:"<ruby>一番<rt>いちばん</rt></ruby>リラックスできるので、ベッドの<ruby>上<rt>うえ</rt></ruby>が<ruby>一番<rt>いちばん</rt></ruby><ruby>好<rt>す</rt></ruby>きです。",
+        aen:"I like being on my bed the most because it is the most relaxing place."
+      },
+      {
+        q:"疲れている時にどこに行きますか。",
+        qf:"<ruby>疲<rt>つか</rt></ruby>れている<ruby>時<rt>とき</rt></ruby>にどこに<ruby>行<rt>い</rt></ruby>きますか。",
+        qen:"Where do you go when you are tired?",
+        a:"家の近くの公園を散歩したり、ベンチに座って、コーヒーを飲んだりします。",
+        af:"<ruby>家<rt>いえ</rt></ruby>の<ruby>近<rt>ちか</rt></ruby>くの<ruby>公園<rt>こうえん</rt></ruby>を<ruby>散歩<rt>さんぽ</rt></ruby>したり、ベンチに<ruby>座<rt>すわ</rt></ruby>って、コーヒーを<ruby>飲<rt>の</rt></ruby>んだりします。",
+        aen:"I take a walk in a park near my house, sit on a bench, and drink coffee."
+      },
+      {
+        q:"子供の時、どこが一番好きでしたか。",
+        qf:"<ruby>子供<rt>こども</rt></ruby>の<ruby>時<rt>とき</rt></ruby>、どこが<ruby>一番<rt>いちばん</rt></ruby><ruby>好<rt>す</rt></ruby>きでしたか。",
+        qen:"When you were a child, what place did you like the most?",
+        a:"私はリビングにあるこたつが一番好きでした。冬はよくそこでゲームをしていました。",
+        af:"<ruby>私<rt>わたし</rt></ruby>はリビングにあるこたつが<ruby>一番<rt>いちばん</rt></ruby><ruby>好<rt>す</rt></ruby>きでした。<ruby>冬<rt>ふゆ</rt></ruby>はよくそこでゲームをしていました。",
+        aen:"My favorite place was the kotatsu in the living room. In winter, I often played games there."
+      },
+      {
+        q:"どうして家にいるのが好きですか。",
+        qf:"どうして<ruby>家<rt>いえ</rt></ruby>にいるのが<ruby>好<rt>す</rt></ruby>きですか。",
+        qen:"Why do you like staying at home?",
+        a:"家でたくさんネットフリックスを見たり、本を読んだりするのが好きだからです。",
+        af:"<ruby>家<rt>いえ</rt></ruby>でたくさんネットフリックスを<ruby>見<rt>み</rt></ruby>たり、<ruby>本<rt>ほん</rt></ruby>を<ruby>読<rt>よ</rt></ruby>んだりするのが<ruby>好<rt>す</rt></ruby>きだからです。",
+        aen:"Because I like watching a lot of Netflix and reading books at home."
+      },
+      {
+        q:"友達と出かける時に、何をしますか。",
+        qf:"<ruby>友達<rt>ともだち</rt></ruby>と<ruby>出<rt>で</rt></ruby>かける<ruby>時<rt>とき</rt></ruby>に、<ruby>何<rt>なに</rt></ruby>をしますか。",
+        qen:"What do you do when you go out with friends?",
+        a:"たいてい友達と居酒屋やバーにお酒を飲みに行きます。",
+        af:"たいてい<ruby>友達<rt>ともだち</rt></ruby>と<ruby>居酒屋<rt>いざかや</rt></ruby>やバーにお<ruby>酒<rt>さけ</rt></ruby>を<ruby>飲<rt>の</rt></ruby>みに<ruby>行<rt>い</rt></ruby>きます。",
+        aen:"I usually go to an izakaya or a bar with my friends to drink."
+      },
+      {
+        q:"家族と行った思い出の場所はありますか。",
+        qf:"<ruby>家族<rt>かぞく</rt></ruby>と<ruby>行<rt>い</rt></ruby>った<ruby>思<rt>おも</rt></ruby>い<ruby>出<rt>で</rt></ruby>の<ruby>場所<rt>ばしょ</rt></ruby>はありますか。",
+        qen:"Is there a memorable place you went to with your family?",
+        a:"キャンプ場です。子供の時に、毎年、家族とキャンプに行きました。そこでたくさんカレーを食べました。",
+        af:"キャンプ<ruby>場<rt>じょう</rt></ruby>です。<ruby>子供<rt>こども</rt></ruby>の<ruby>時<rt>とき</rt></ruby>に、<ruby>毎年<rt>まいとし</rt></ruby>、<ruby>家族<rt>かぞく</rt></ruby>とキャンプに<ruby>行<rt>い</rt></ruby>きました。そこでたくさんカレーを<ruby>食<rt>た</rt></ruby>べました。",
+        aen:"A campsite. When I was a child, I went camping with my family every year. We ate a lot of curry there."
+      },
+      {
+        q:"記念日に彼女とどこに行きましたか。",
+        qf:"<ruby>記念日<rt>きねんび</rt></ruby>に<ruby>彼女<rt>かのじょ</rt></ruby>とどこに<ruby>行<rt>い</rt></ruby>きましたか。",
+        qen:"Where did you go with your girlfriend on your anniversary?",
+        a:"北海道にハイキングに行って、きれいな温泉の旅館に泊まりました。",
+        af:"<ruby>北海道<rt>ほっかいどう</rt></ruby>にハイキングに<ruby>行<rt>い</rt></ruby>って、きれいな<ruby>温泉<rt>おんせん</rt></ruby>の<ruby>旅館<rt>りょかん</rt></ruby>に<ruby>泊<rt>と</rt></ruby>まりました。",
+        aen:"We went hiking in Hokkaido and stayed at a beautiful hot spring ryokan."
+      },
+      {
+        q:"日本でおすすめの場所はどこですか。",
+        qf:"<ruby>日本<rt>にほん</rt></ruby>でおすすめの<ruby>場所<rt>ばしょ</rt></ruby>はどこですか。",
+        qen:"What place do you recommend in Japan?",
+        a:"日本で長野県はおすすめです。長野県にたくさんハイキングのコースがありますよ。",
+        af:"<ruby>日本<rt>にほん</rt></ruby>で<ruby>長野県<rt>ながのけん</rt></ruby>はおすすめです。<ruby>長野県<rt>ながのけん</rt></ruby>にたくさんハイキングのコースがありますよ。",
+        aen:"I recommend Nagano. There are many hiking courses there."
+      },
+      {
+        q:"温泉で何をしてはいけませんか。",
+        qf:"<ruby>温泉<rt>おんせん</rt></ruby>で<ruby>何<rt>なに</rt></ruby>をしてはいけませんか。",
+        qen:"What should you not do in a hot spring?",
+        a:"温泉でスマホを使ってはいけません。",
+        af:"<ruby>温泉<rt>おんせん</rt></ruby>でスマホを<ruby>使<rt>つか</rt></ruby>ってはいけません。",
+        aen:"You should not use your smartphone in a hot spring."
+      },
+    ]
+  },
 ];
 
 // ─────────────────────────────────────────────────────────────
@@ -1526,32 +2529,75 @@ let sessionSentenceDone = new Set(); // tracks sentence keys answered correctly 
 // ─────────────────────────────────────────────────────────────
 // PANELS
 // ─────────────────────────────────────────────────────────────
+const PANELS = {
+  practice: { id: 'panel-practice', render: () => renderSetGrid() },
+  config:   { id: 'panel-config',   render: () => renderConfigPanel() },
+  stats:    { id: 'panel-stats',    render: () => renderStatsPanel() },
+  keys:     { id: 'panel-keys',     render: () => renderKeysPanel() },
+};
+
+// Rendered from SHORTCUTS itself, so the sheet always describes the live bindings.
+function renderKeysPanel() {
+  document.getElementById('keys-body').innerHTML = SHORTCUTS.map(([group, rows]) =>
+    '<div class="panel-section"><div class="panel-label">' + group + '</div>' +
+    rows.map(([key, label]) =>
+      '<div class="key-row"><span class="key-desc">' + label + '</span>' +
+      '<kbd class="key key-lg">' + key + '</kbd></div>').join('') +
+    '</div>').join('');
+}
 function openPanel(name) {
-  if (name === 'config') {
-    renderConfigPanel();
-    document.getElementById('panel-config').classList.add('open');
-  } else {
-    renderStatsPanel();
-    document.getElementById('panel-stats').classList.add('open');
-  }
+  const p = PANELS[name] || PANELS.stats;
+  p.render();
+  document.getElementById(p.id).classList.add('open');
 }
 function closePanel(id) { document.getElementById(id).classList.remove('open'); }
 function closePanelOutside(e, id) { if (e.target === document.getElementById(id)) closePanel(id); }
 
-function renderConfigPanel() {
-  // set chips
-  const vc = document.getElementById('cfg-chips-vocab');
-  const sc = document.getElementById('cfg-chips-sent');
-  const qc = document.getElementById('cfg-chips-qa');
-  vc.innerHTML = ''; sc.innerHTML = ''; qc.innerHTML = '';
-  const sorted = [...VOCAB_SETS].sort((a, b) => a.label.localeCompare(b.label, undefined, {numeric: true}));
-  sorted.forEach(s => {
-    const chip = document.createElement('button');
-    chip.className = 'panel-chip' + (activeSetIds.has(s.id) ? ' active' : '');
-    chip.innerHTML = s.label + '<span class="chip-count">' + s.words.length + '</span>';
-    chip.onclick = function() { toggleSet(s.id, this); renderConfigPanel(); };
-    (s.qaSet ? qc : s.sentenceSet ? sc : vc).appendChild(chip);
+// The three kinds of set, in the order they appear as grid columns.
+const SET_TYPES = [
+  { label: 'Words',     match: s => !s.sentenceSet && !s.qaSet },
+  { label: 'Sentences', match: s => s.sentenceSet === true },
+  { label: 'Q&A',       match: s => s.qaSet === true },
+];
+
+function volumeLabels() {
+  return [...new Set(VOCAB_SETS.map(s => s.label))]
+    .sort((a, b) => a.localeCompare(b, undefined, {numeric: true}));
+}
+
+function renderSetGrid() {
+  const g = document.getElementById('practice-set-grid');
+  g.innerHTML = '';
+  const add = (cls, text, sets) => {
+    const on = sets.length > 0 && sets.every(s => activeSetIds.has(s.id));
+    const b = document.createElement('button');
+    b.className = cls + (on ? ' active' : '');
+    b.textContent = text;
+    b.onclick = () => setSets(sets, !on);
+    g.appendChild(b);
+  };
+
+  add('set-head', '', VOCAB_SETS);                       // corner = everything
+  SET_TYPES.forEach(t => add('set-head', t.label, VOCAB_SETS.filter(t.match)));
+
+  volumeLabels().forEach(label => {
+    const row = VOCAB_SETS.filter(s => s.label === label);
+    add('set-vol', label, row);
+    SET_TYPES.forEach(t => {
+      const s = row.find(t.match);
+      if (s) add('set-cell', s.words.length, [s]);
+      else g.appendChild(document.createElement('div'));  // volume lacks this type
+    });
   });
+
+  const active = VOCAB_SETS.filter(s => activeSetIds.has(s.id));
+  const cards = active.reduce((n, s) => n + s.words.length, 0);
+  document.getElementById('practice-set-summary').textContent = active.length
+    ? `${active.length} set${active.length === 1 ? '' : 's'} · ${cards} cards`
+    : 'Nothing selected — tap a cell to pick what to practice';
+}
+
+function renderConfigPanel() {
   // theme buttons
   document.getElementById('cfg-dark').classList.toggle('active', isDark);
   document.getElementById('cfg-light').classList.toggle('active', !isDark);
@@ -1611,24 +2657,16 @@ function renderStatsPanel() {
 // ─────────────────────────────────────────────────────────────
 // SET SELECTION
 // ─────────────────────────────────────────────────────────────
-function toggleSet(id, chipEl) {
-  if (activeSetIds.has(id)) {
-    if (activeSetIds.size === 1) {
-      // shake the chip to indicate it can't be deselected
-      if (chipEl) {
-        chipEl.classList.remove('shake');
-        void chipEl.offsetWidth;
-        chipEl.classList.add('shake');
-        chipEl.addEventListener('animationend', () => chipEl.classList.remove('shake'), { once: true });
-      }
-      return;
-    }
-    activeSetIds.delete(id);
-  } else {
-    activeSetIds.add(id);
-  }
+// Turn a group of sets on or off together. Deselecting down to nothing is
+// allowed — the card face says what to do, which beats a chip that refuses
+// to switch off until you've picked its replacement.
+function setSets(sets, on) {
+  sets.forEach(s => on ? activeSetIds.add(s.id) : activeSetIds.delete(s.id));
   applySetSelection();
+  renderSetGrid();
 }
+
+function clearSets() { setSets(VOCAB_SETS, false); }
 
 function applySetSelection() {
   rebuildV(); buildDeck(); showCard(); updateStats(); saveProgress();
@@ -1742,21 +2780,103 @@ function dir() {
 // Both the question (Q) and the model answer (A) are shown together so the
 // learner produces the whole exchange. Nothing from the target side is shown
 // until the card is flipped.
-function qaAudioBtn(key, part) {
-  if (!keyOffset[key + ':' + part]) return '';
-  return '<button class="qa-audio-btn" data-qa="' + key + ':' + part + '" aria-label="Play ' + part.toUpperCase() + '" title="Play ' + part.toUpperCase() + ' (' + (part === 'q' ? 'Q' : 'A') + ' key)"' +
-         ' onclick="event.stopPropagation(); playQAPart(\'' + key + '\',\'' + part + '\',this)">🔊</button>';
+// The listen controls live under the card, full-width, so they're thumb-sized
+// and can't be confused with tapping the card itself. A Q&A card has two
+// clips (the question and the model answer), so it gets two buttons.
+function renderListenRow(v) {
+  const row = document.getElementById('listen-row');
+  row.innerHTML = '';
+  const add = (key, label, hotkey, id, part) => {
+    if (!keyOffset[key]) return;
+    const b = document.createElement('button');
+    b.className = 'btn listen-btn';
+    b.innerHTML = '<span class="listen-ico">🔊</span> ' + label +
+                  '<kbd class="key">' + hotkey + '</kbd>';
+    if (id) b.id = id;
+    b.setAttribute('data-qa', key);
+    b.setAttribute('aria-label', 'Play ' + label + ' (' + hotkey + ' key)');
+    b.title = 'Play ' + label + ' (' + hotkey + ')';
+    b.onclick = () => part ? playQAPart(v._key, part, b) : playKey(v._key, b);
+    row.appendChild(b);
+  };
+  if (v._isQA) {
+    add(v._key + ':q', 'Question', 'Q', null, 'q');
+    add(v._key + ':a', 'Answer',   'A', null, 'a');
+  } else {
+    add(v._key, 'Listen', 'P', 'card-audio', null);
+  }
+  row.style.display = row.children.length ? 'flex' : 'none';
 }
+
 function qaPairHTML(v, jpSide) {
   const q = jpSide ? (showFurigana && v.qf ? v.qf : v.q) : v.qen;
   const a = jpSide ? (showFurigana && v.af ? v.af : v.a) : v.aen;
-  return '<div class="qa-row"><span class="qa-label">Q</span>' + qaAudioBtn(v._key, 'q') + '<span class="qa-text">' + q + '</span></div>' +
-         '<div class="qa-row"><span class="qa-label">A</span>' + qaAudioBtn(v._key, 'a') + '<span class="qa-text">' + a + '</span></div>';
+  return '<div class="qa-row"><span class="qa-label">Q</span><span class="qa-text">' + q + '</span></div>' +
+         '<div class="qa-row"><span class="qa-label">A</span><span class="qa-text">' + a + '</span></div>';
 }
 // the side shown on the front (the prompt to translate FROM)
 function qaPromptHTML(v, d) { return qaPairHTML(v, d === 'jp-en'); }
 // the side revealed on flip (the answer to check)
 function qaRevealHTML(v, d) { return qaPairHTML(v, d === 'en-jp'); }
+
+// ── ANSWER ───────────────────────────────────────────────────
+// Built once, when the card is shown, so the card reaches its final height
+// immediately and revealing never shifts the layout under it. Until it is
+// revealed the answer sits there blurred (see .masked).
+let answerShown = false;
+
+function setNavVisible(on) {
+  ['nav-prev', 'nav-next'].forEach(id =>
+    document.getElementById(id).style.display = on ? 'inline-flex' : 'none');
+}
+
+function renderAnswer(v, d) {
+  const el = document.getElementById('arev');
+  el.className = 'answer-reveal';
+  el.style.display = 'block';
+  document.getElementById('card-divider').style.display = 'block';
+
+  if (v._isQA) {
+    el.style.fontSize = '';
+    el.innerHTML = qaRevealHTML(v, d);
+  } else {
+    const ans = d === 'en-jp' ? v.jp + (v.kana ? '（' + v.kana + '）' : '') : v.en;
+    el.style.fontSize = ans.length > 40 ? '15px' : ans.length > 25 ? '18px' : '22px';
+    // furigana only annotates the JAPANESE side; never override an English answer
+    if (showFurigana && d === 'en-jp' && v.furigana) {
+      el.innerHTML = v.furigana;
+    } else if (showFurigana && d === 'en-jp' && v.kana && v.kana !== v.jp) {
+      el.innerHTML = rubyFromReading(v.jp, v.kana);
+    } else {
+      el.textContent = ans;
+    }
+  }
+
+  // the vocab hint rides along with the answer, so reserve its height too
+  const h = document.getElementById('card-hint');
+  if (v._isSentence && v.vocab) {
+    h.innerHTML = getVocabHintHTML(v.vocab);
+    h.style.display = 'block';
+    h.classList.add('masked');
+  }
+  maskAnswer(true);
+}
+
+function maskAnswer(on) {
+  answerShown = !on;
+  document.getElementById('arev').classList.toggle('masked', on);
+  const h = document.getElementById('card-hint');
+  if (on) h.classList.add('masked');
+}
+
+// Reveal = lift the blur. Nothing is inserted, so nothing moves.
+function revealAnswer(resultClass) {
+  const el = document.getElementById('arev');
+  el.className = 'answer-reveal' + (resultClass ? ' ' + resultClass : '');
+  maskAnswer(false);
+  document.getElementById('card-hint').classList.remove('masked');
+  document.getElementById('brow-hint').classList.remove('visible');
+}
 
 function showCard() {
   // hide summary
@@ -1764,7 +2884,7 @@ function showCard() {
   document.getElementById('card').style.display = '';
 
   if (!V.length) {
-    document.getElementById('ptext').textContent = 'Select sets in Config ⚙';
+    document.getElementById('ptext').textContent = 'Pick what to practice 📚';
     document.getElementById('ptext').style.fontSize = '18px';
     document.getElementById('plang').textContent = '';
     document.getElementById('psub').textContent = '';
@@ -1774,6 +2894,9 @@ function showCard() {
     document.getElementById('brow-hint').classList.remove('visible');
     document.getElementById('counter').textContent = '';
     document.getElementById('set-badge').textContent = '';
+    document.getElementById('listen-row').style.display = 'none';
+    setNavVisible(false);
+    hideRepZone();
     showRow(null);
     updateStruggleBar(null);
     return;
@@ -1789,24 +2912,26 @@ function showCard() {
   const d = dir();
   flipped = false;
 
-  document.getElementById('arev').style.display = 'none';
-  document.getElementById('card-divider').style.display = 'none';
   document.getElementById('card-hint').style.display = 'none';
   document.getElementById('card-hint').style.fontSize = '';
   document.getElementById('user-attempt').style.display = 'none';
   document.getElementById('brow-hint').classList.remove('visible');
   document.getElementById('user-attempt').textContent = '';
-  hideRepZone();
+  showRepZone();
   resetAnswerToggle();
   const cardEl = document.getElementById('card');
   cardEl.className = 'card';
   showRow(null);
   updateStruggleBar(v);
 
+  // lay the answer out now, blurred — the card is its final height from here on
+  renderAnswer(v, d);
+  setNavVisible(true);
+  document.getElementById('nav-prev').disabled = cur <= 0;
+
   // audio availability for this card
-  audioCurrentKey = v._key;
-  const cardAudioBtn = document.getElementById('card-audio');
-  if (cardAudioBtn) cardAudioBtn.style.display = keyOffset[v._key] ? 'inline-flex' : 'none';
+  audioCurrentKey = primaryAudioKey(v);
+  renderListenRow(v);
 
   if (typing) {
     document.getElementById('ainput').value = '';
@@ -1860,7 +2985,7 @@ function showCard() {
   updateStats();
 
   // autoplay when the Japanese is already on the front (JP→EN)
-  if (autoplay && keyOffset[v._key] && dir() === 'jp-en') playCurrentAudio();
+  if (autoplay && keyOffset[audioCurrentKey] && dir() === 'jp-en') playCurrentAudio();
 }
 
 // Build furigana that annotates ONLY the kanji core of a word, leaving leading
@@ -1897,12 +3022,13 @@ function getVocabHintHTML(vocab) {
 }
 
 function revealVocabHint() {
-  const idx = deck[cur % deck.length];
-  const v = V[idx];
+  const v = currentCard();
+  if (!v || !v.vocab) return;          // word and Q&A cards have no hint
   const h = document.getElementById('card-hint');
 
   h.innerHTML = getVocabHintHTML(v.vocab) || '?';
   h.style.display = 'inline';
+  h.classList.remove('masked');
   document.getElementById('brow-hint').classList.remove('visible');
 }
 
@@ -1915,45 +3041,10 @@ function flipCard() {
   document.getElementById('brow-hint').classList.remove('visible');
 
   animateFlip(() => {
-    const d = dir();
-    const el = document.getElementById('arev');
-    el.className = 'answer-reveal';
-    el.style.display = 'block';
-    document.getElementById('card-divider').style.display = 'block';
-    document.getElementById('brow-hint').classList.remove('visible');
+    revealAnswer();
     showAnswerToggle();
-
-    if (v._isQA) {
-      // reveal the target side (Q + A together)
-      el.style.fontSize = '';
-      el.innerHTML = qaRevealHTML(v, d);
-      showRow('brow-grade');
-      showRepZone();
-      return;
-    }
-
-    const ans = d === 'en-jp' ? v.jp + (v.kana ? '（' + v.kana + '）' : '') : v.en;
-    el.style.fontSize = ans.length > 40 ? '15px' : ans.length > 25 ? '18px' : '22px';
-    // furigana only annotates the JAPANESE side; never override an English answer
-    if (showFurigana && d === 'en-jp') {
-      if (v.furigana) {
-        el.innerHTML = v.furigana;
-      } else if (v.kana && v.kana !== v.jp) {
-        el.innerHTML = rubyFromReading(v.jp, v.kana);
-      } else {
-        el.textContent = ans;
-      }
-    } else {
-      el.textContent = ans;
-    }
-    if (v._isSentence && v.vocab) {
-      const h = document.getElementById('card-hint');
-      h.innerHTML = getVocabHintHTML(v.vocab);
-      h.style.display = 'block';
-    }
     showRow('brow-grade');
-    showRepZone();
-    if (autoplay && keyOffset[v._key] && dir() === 'en-jp') playCurrentAudio();
+    if (!v._isQA && autoplay && keyOffset[audioCurrentKey] && dir() === 'en-jp') playCurrentAudio();
   });
 }
 
@@ -1964,29 +3055,7 @@ function checkAnswer() {
   const input = document.getElementById('ainput').value.trim();
 
   if (v._isSentence || v._isQA) {
-    const el = document.getElementById('arev');
-    el.className = 'answer-reveal';
-    el.style.display = 'block';
-    document.getElementById('card-divider').style.display = 'block';
-    document.getElementById('brow-hint').classList.remove('visible');
-    if (v._isQA) {
-      el.style.fontSize = '';
-      el.innerHTML = qaRevealHTML(v, d);
-    } else {
-      const ans = d === 'en-jp' ? v.jp : v.en;
-      el.style.fontSize = ans.length > 40 ? '15px' : ans.length > 25 ? '18px' : '22px';
-      // furigana only annotates the JAPANESE side; never override an English answer
-      if (showFurigana && d === 'en-jp' && v.furigana) {
-        el.innerHTML = v.furigana;
-      } else {
-        el.textContent = ans;
-      }
-      if (v.vocab) {
-        const h = document.getElementById('card-hint');
-        h.innerHTML = getVocabHintHTML(v.vocab);
-        h.style.display = 'block';
-      }
-    }
+    revealAnswer();
     // show what user typed so they can compare
     const attempt = document.getElementById('user-attempt');
     if (input) {
@@ -1995,8 +3064,7 @@ function checkAnswer() {
     }
     showAnswerToggle();
     showRow('brow-grade');
-    showRepZone();
-    if (autoplay && keyOffset[v._key] && dir() === 'en-jp') playCurrentAudio();
+    if (autoplay && keyOffset[audioCurrentKey] && dir() === 'en-jp') playCurrentAudio();
     return;
   }
 
@@ -2008,14 +3076,7 @@ function checkAnswer() {
     const acc = v.en.toLowerCase().split('/').map(s => s.trim());
     ok = input.length > 1 && acc.some(a => input.toLowerCase().includes(a) || a.includes(input.toLowerCase()));
   }
-  const ans = d === 'en-jp' ? v.jp + (v.kana ? '（' + v.kana + '）' : '') : v.en;
-  const el = document.getElementById('arev');
-  el.textContent = ans;
-  el.style.fontSize = ans.length > 40 ? '15px' : ans.length > 25 ? '18px' : '22px';
-  el.style.display = 'block';
-  el.className = 'answer-reveal ' + (ok ? 'ok' : 'bad');
-  document.getElementById('card-divider').style.display = 'block';
-  document.getElementById('brow-hint').classList.remove('visible');
+  revealAnswer(ok ? 'ok' : 'bad');
   document.getElementById('card').className = 'card ' + (ok ? 'correct' : 'wrong');
   if (repGoal > 0) showAnswerToggle();
   const attempt = document.getElementById('user-attempt');
@@ -2023,10 +3084,9 @@ function checkAnswer() {
     attempt.textContent = input;
     attempt.style.display = 'block';
   }
-  if (autoplay && keyOffset[v._key] && dir() === 'en-jp') playCurrentAudio();
+  if (autoplay && keyOffset[audioCurrentKey] && dir() === 'en-jp') playCurrentAudio();
   markResult(ok, true);
   if (repGoal > 0) {
-    showRepZone();
     const bNext = document.getElementById('brow-next');
     bNext.innerHTML = '<button class="btn" onclick="nextCard()">Next →</button>';
     showRow('brow-next');
@@ -2230,11 +3290,15 @@ function setTyping(t) {
 
 // ── REP COUNTER ─────────────────────────────────────────────────
 
+// Shown from the moment a card appears, not just after the reveal — the reps
+// are for saying the prompt aloud, so the counter has to be there while you
+// are still working on it.
 function showRepZone() {
-  if (repGoal === 0) return;
   repCount = 0;
+  const zone = document.getElementById('rep-zone');
+  if (repGoal === 0) { zone.style.display = 'none'; return; }
   updateRepArc();
-  document.getElementById('rep-zone').style.display = 'flex';
+  zone.style.display = 'flex';
 }
 
 function hideRepZone() {
@@ -2275,8 +3339,7 @@ function celebrate() {
 }
 function toggleAnswer() {
   // only meaningful once an answer is on screen (the result / reps view)
-  const revealed = flipped || document.getElementById('arev').style.display === 'block';
-  if (!revealed) return;
+  if (!answerShown) return;
   answerHidden = !answerHidden;
   document.getElementById('card-body').classList.toggle('answer-hidden', answerHidden);
 }
@@ -2420,8 +3483,8 @@ function _applyPayload(d) {
   if (d.autoplay !== undefined) autoplay = d.autoplay;
   if (d.activeSetIds) {
     const valid = new Set(VOCAB_SETS.map(s => s.id));
-    const restored = d.activeSetIds.filter(id => valid.has(id));
-    if (restored.length) activeSetIds = new Set(restored);
+    // an empty selection is a real choice now, so restore it as-is
+    activeSetIds = new Set(d.activeSetIds.filter(id => valid.has(id)));
   }
 }
 
@@ -2537,7 +3600,7 @@ let keyOffset = {};    // "setId:idx" -> [file, startSec, endSec]
 let audioEnd = null;   // currentTime to stop at
 let audioCurrentKey = null;
 let autoplay = false;
-let activeAudioBtn = null;   // whichever button (card-audio or a qa-audio-btn) is "playing"
+let activeAudioBtn = null;   // whichever listen button is "playing"
 
 function audioInit() {
   const p = document.getElementById('audio-player');
@@ -2610,7 +3673,18 @@ function playKey(key, el) {
   else p.addEventListener('loadedmetadata', waitSeekable, { once: true });
   return true;
 }
-function playCurrentAudio() { if (audioCurrentKey) playKey(audioCurrentKey, document.getElementById('card-audio')); }
+// What "play this card" means. A Q&A card is two recordings, not one — its
+// plain key is a whole-exchange clip that only some volumes have, so the
+// question is the sane default for P / autoplay.
+function primaryAudioKey(v) {
+  if (!v) return null;
+  if (v._isQA) return keyOffset[v._key + ':q'] ? v._key + ':q' : null;
+  return v._key;
+}
+function playCurrentAudio() {
+  if (!audioCurrentKey) return;
+  playKey(audioCurrentKey, document.querySelector('#listen-row button[data-qa="' + audioCurrentKey + '"]'));
+}
 function playQAPart(key, part, el) { playKey(key + ':' + part, el); }
 
 function setAutoplay(on) {
@@ -2623,45 +3697,64 @@ function setAutoplay(on) {
 // ─────────────────────────────────────────────────────────────
 // KEYBOARD SHORTCUTS
 // ─────────────────────────────────────────────────────────────
+// ── KEYBOARD ─────────────────────────────────────────────────
+// One primary action on Space (reveal, then pass), arrows for moving and
+// counting, letters that spell what they do. Every binding lives in this one
+// table so the ? sheet can't drift from what the keys actually do.
+const SHORTCUTS = [
+  ['Card', [
+    ['Space', 'Reveal answer, then Got it', () => spaceAction()],
+    ['→',     'Next card',                  () => nextCard()],
+    ['←',     'Previous card',              () => prevCard()],
+    ['G',     'Got it',                     () => grading() && markResult(true)],
+    ['M',     'Missed',                     () => grading() && markResult(false)],
+  ]],
+  ['Practice', [
+    ['H', 'Show hint',            () => revealVocabHint()],
+    ['B', 'Blur / unblur answer', () => toggleAnswer()],
+    ['↑', 'Count a rep',          () => repsUp()],
+    ['↓', 'Undo a rep',           () => repsDown()],
+  ]],
+  ['Audio', [
+    ['P', 'Play this card',  () => playCurrentAudio()],
+    ['Q', 'Play question',   () => playPart('q')],
+    ['A', 'Play answer',     () => playPart('a')],
+  ]],
+  ['App', [
+    ['F',   'Furigana on / off',  () => setFurigana(!showFurigana)],
+    ['?',   'Keyboard shortcuts', () => openPanel('keys')],
+    ['Esc', 'Close panel',        () => closeAllPanels()],
+  ]],
+];
+
+const KEY_ALIASES = { ' ': 'Space', ArrowRight: '→', ArrowLeft: '←',
+                      ArrowUp: '↑', ArrowDown: '↓', Escape: 'Esc', Enter: 'Space' };
+
+function grading()  { return document.getElementById('brow-grade').classList.contains('visible'); }
+function repsOpen() { return document.getElementById('rep-zone').style.display !== 'none'; }
+function repsUp()   { if (repsOpen()) tapRep(); }
+function repsDown() { if (repsOpen()) decreaseRep(); }
+function currentCard() { return deck.length ? V[deck[cur % deck.length]] : null; }
+function playPart(part) {
+  const v = currentCard();
+  if (v && v._isQA) playQAPart(v._key, part, document.querySelector('[data-qa="' + v._key + ':' + part + '"]'));
+}
+// Space is the whole loop: reveal what's hidden, otherwise pass the card.
+function spaceAction() { if (grading()) markResult(true); else flipCard(); }
+function closeAllPanels() {
+  document.querySelectorAll('.panel-overlay.open').forEach(p => p.classList.remove('open'));
+}
+
+const KEY_ACTIONS = Object.fromEntries(
+  SHORTCUTS.flatMap(([, rows]) => rows.map(([key, , fn]) => [key, fn])));
+
 document.addEventListener('keydown', e => {
-  if (e.target.tagName === 'INPUT') return;
-  // Space / Enter — flip card
-  if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flipCard(); }
-  // Right arrow — flip card, or "Got it" when grading
-  if (e.key === 'ArrowRight') {
-    e.preventDefault();
-    if (document.getElementById('brow-grade').classList.contains('visible')) markResult(true);
-    else flipCard();
-  }
-  // Left arrow — go back, or "Missed" when grading
-  if (e.key === 'ArrowLeft') {
-    e.preventDefault();
-    if (document.getElementById('brow-grade').classList.contains('visible')) markResult(false);
-    else prevCard();
-  }
-  // Up arrow — increment rep
-  if (e.key === 'ArrowUp') {
-    e.preventDefault();
-    if (document.getElementById('rep-zone').style.display !== 'none') tapRep();
-  }
-  // Down arrow — decrement rep
-  if (e.key === 'ArrowDown') {
-    e.preventDefault();
-    if (document.getElementById('rep-zone').style.display !== 'none') decreaseRep();
-  }
-  // P — play audio for current card
-  if (e.key === 'p' || e.key === 'P') { e.preventDefault(); playCurrentAudio(); }
-  // Q / A — play just the question or answer half, for Q&A cards
-  if (e.key === 'q' || e.key === 'Q') {
-    const v = V[deck[cur % Math.max(deck.length, 1)]];
-    if (v && v._isQA) { e.preventDefault(); playQAPart(v._key, 'q', document.querySelector('.qa-audio-btn[data-qa="' + v._key + ':q"]')); }
-  }
-  if (e.key === 'a' || e.key === 'A') {
-    const v = V[deck[cur % Math.max(deck.length, 1)]];
-    if (v && v._isQA) { e.preventDefault(); playQAPart(v._key, 'a', document.querySelector('.qa-audio-btn[data-qa="' + v._key + ':a"]')); }
-  }
-  // H — hide/show the answer (active recall during spoken reps)
-  if (e.key === 'h' || e.key === 'H') { e.preventDefault(); toggleAnswer(); }
+  if (e.target.tagName === 'INPUT' || e.metaKey || e.ctrlKey || e.altKey) return;
+  const key = KEY_ALIASES[e.key] || e.key.toUpperCase();
+  const fn = KEY_ACTIONS[key];
+  if (!fn) return;
+  e.preventDefault();
+  fn();
 });
 
 // ─────────────────────────────────────────────────────────────
